@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=77.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "german-property-energy-management"
+version = "0.1.0"
+description = "An AI-powered energy monitoring, forecasting, and optimization prototype for German properties."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pandas",
+    "numpy",
+    "plotly",
+    "streamlit",
+    "scikit-learn",
+    "statsmodels",
+    "python-dotenv",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

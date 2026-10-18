@@ -1,0 +1,14 @@
+﻿# Data processing and numerical computing
+pandas
+numpy
+
+# Visualization and dashboard
+plotly
+streamlit
+
+# Forecasting and machine learning
+scikit-learn
+statsmodels
+
+# Configuration and environment variables
+python-dotenv
