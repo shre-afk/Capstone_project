@@ -1,7 +1,6 @@
 import pandas as pd
-import numpy as np
 
-"""Fetching data from OPSD website and saving filepath for easier access"""
+"""Fetching data from OPSD website and saving filepath for easier access - this will change"""
 """ Direct link to the OPSD 15-minute household CSV dataset"""
 HOUSEHOLD_DATA_URL = (
     "https://data.open-power-system-data.org/"
