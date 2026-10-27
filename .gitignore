@@ -20,3 +20,6 @@ htmlcov/
 # IDE
 .vscode/
 .idea/
+
+# SQLite database
+energy.db*

@@ -12,3 +12,7 @@ statsmodels
 
 # Configuration and environment variables
 python-dotenv
+
+# Python Test
+pytest
+pytest-cov
