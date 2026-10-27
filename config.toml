@@ -1,0 +1,70 @@
+# config.toml - every tunable value of the backend (Database & Analysis) section
+# @team change numbers HERE and never inside Python code
+
+[site]
+timezone ="Europe/Berlin"   # to show times & find local days
+
+[data]
+csv_path = "data/raw/household_data_15min_singleindex.csv"
+start = "2016-01-01"            # first day loaded into the database
+replay_from = "2016-12-01"      # from here on, replay.py feeds the data in "live"
+end = "2017-01-01"              # replay stops here
+replay_seconds = 2              # real seconds between two "live" 15-minute readings
+
+[prices]
+eur_per_kwh = 0.30              # PLACEHOLDER - typical German electricity price
+co2_kg_per_kwh = 0.38           # German grid mix (check the latest UBA value)
+
+[validation.max_kwh_per_interval]   # more than this in 15 min is impossible -> rejected
+home = 5.0
+business = 100.0
+public = 50.0
+
+[benchmarks]                    # electricity in kWh per m2 per year - PLACEHOLDERS
+home = 30
+business = 100
+public = 60
+
+[score.weights]                 # must add up to 1.0
+intensity = 0.6
+after_hours = 0.4
+
+
+
+# Buildings we take from the OPSD household dataset
+# floor_area_m2 is NOT in the dataset; it is our assumption written down here
+[[buildings]]
+name = "Home 1"
+type = "home"
+column = "DE_KN_residential1_grid_import"
+floor_area_m2 = 140
+
+[[buildings]]
+name = "Home 3"
+type = "home"
+column = "DE_KN_residential3_grid_import"
+floor_area_m2 = 120
+
+[[buildings]]
+name = "Home 4"
+type = "home"
+column = "DE_KN_residential4_grid_import"
+floor_area_m2 = 160
+
+[[buildings]]
+name = "Business 1"
+type = "business"
+column = "DE_KN_industrial1_grid_import"
+floor_area_m2 = 2500
+
+[[buildings]]
+name = "Business 3"
+type = "business"
+column = "DE_KN_industrial3_grid_import"
+floor_area_m2 = 6000
+
+[[buildings]]
+name = "Public 1"
+type = "public"
+column = "DE_KN_public1_grid_import"
+floor_area_m2 = 800

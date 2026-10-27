@@ -23,3 +23,6 @@ htmlcov/
 
 # SQLite database
 energy.db*
+
+# Downloaded datasets
+data/raw/*.csv
