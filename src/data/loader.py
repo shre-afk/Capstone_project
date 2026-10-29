@@ -1,7 +1,7 @@
+"""Load and inspect household energy data from OPSD."""
+
 import pandas as pd
 
-"""Fetching data from OPSD website and saving filepath for easier access - this will change"""
-""" Direct link to the OPSD 15-minute household CSV dataset"""
 HOUSEHOLD_DATA_URL = (
     "https://data.open-power-system-data.org/"
     "household_data/2020-04-15/"
@@ -20,10 +20,9 @@ METADATA_COLUMNS = [
 
 SAMPLE_SIZE = 1_000
 
-"""Read the data and store in dataframe titled household_dataframe"""
 
 def load_household_data(
-    nrows: int | None = SAMPLE_SIZE,
+        nrows: int | None = SAMPLE_SIZE,
 ) -> pd.DataFrame:
     """Load household energy data from OPSD.
 
@@ -53,6 +52,7 @@ def load_household_data(
 
     return dataframe
 
+
 def get_measurement_columns(dataframe: pd.DataFrame) -> list[str]:
     """Return columns that contain energy measurements."""
     return [
@@ -60,6 +60,7 @@ def get_measurement_columns(dataframe: pd.DataFrame) -> list[str]:
         for column in dataframe.columns
         if column not in METADATA_COLUMNS
     ]
+
 
 def print_data_summary(dataframe: pd.DataFrame) -> None:
     """Print a summary of the loaded energy dataset."""
@@ -81,14 +82,6 @@ def print_data_summary(dataframe: pd.DataFrame) -> None:
         .sum()
         .sort_values(ascending=False)
         .head(10)
-        .to_string()
-    )
-
-    print("\nNon-missing values per measurement:")
-    print(
-        dataframe[measurement_columns]
-        .count()
-        .sort_values(ascending=False)
         .to_string()
     )
 
@@ -114,7 +107,6 @@ def print_data_summary(dataframe: pd.DataFrame) -> None:
         )
 
 
-"""Getting summary of the data"""
 if __name__ == "__main__":
     try:
         household_dataframe = load_household_data()

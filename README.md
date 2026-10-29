@@ -88,13 +88,18 @@ Capstone_project/
 |-- docs/
 |-- scripts/
 |-- src/
-|   `-- energy_management/
-|       |-- advisor/
-|       |-- analytics/
-|       |-- dashboard/
-|       |-- data/
-|       |-- forecasting/
-|       `-- utils/
+|   |-- app.py
+|   |-- data/
+|   |   |-- __init__.py
+|   |   `-- loader.py
+|   `-- ui/
+|       |-- __init__.py
+|       `-- dashboard/
+|           |-- __init__.py
+|           |-- *.py
+|           `-- static/
+|-- .streamlit/
+|   `-- config.toml
 |-- tests/
 |-- .env.example
 |-- .gitignore
@@ -127,6 +132,14 @@ The initial data analysis, visualization, dashboard, forecasting, and configurat
    ```bash
    python -m pip check
    ```
+
+### Run the Dashboard
+
+From the project directory:
+
+```bash
+python -m streamlit run src/app.py
+```
 
 ### Environment Variables
 
