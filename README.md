@@ -80,13 +80,8 @@ The selected dataset and its columns will be reviewed before analysis begins. Na
 
 ```text
 Capstone_project/
-|-- config/
-|-- data/
-|   |-- raw/
-|   |-- processed/
-|   `-- external/
-|-- docs/
-|-- scripts/
+|-- .streamlit/
+|   `-- config.toml
 |-- src/
 |   |-- app.py
 |   |-- data/
@@ -98,9 +93,6 @@ Capstone_project/
 |           |-- __init__.py
 |           |-- *.py
 |           `-- static/
-|-- .streamlit/
-|   `-- config.toml
-|-- tests/
 |-- .env.example
 |-- .gitignore
 |-- pyproject.toml
@@ -108,7 +100,7 @@ Capstone_project/
 `-- requirements.txt
 ```
 
-Local virtual environments and downloaded datasets are excluded from version control.
+Local virtual environments, generated Python files, and downloaded datasets are excluded from version control.
 
 ## Development Environment
 
