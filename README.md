@@ -80,22 +80,19 @@ The selected dataset and its columns will be reviewed before analysis begins. Na
 
 ```text
 Capstone_project/
-|-- config/
-|-- data/
-|   |-- raw/
-|   |-- processed/
-|   `-- external/
-|-- docs/
-|-- scripts/
+|-- .streamlit/
+|   `-- config.toml
 |-- src/
-|   `-- energy_management/
-|       |-- advisor/
-|       |-- analytics/
-|       |-- dashboard/
-|       |-- data/
-|       |-- forecasting/
-|       `-- utils/
-|-- tests/
+|   |-- app.py
+|   |-- data/
+|   |   |-- __init__.py
+|   |   `-- loader.py
+|   `-- ui/
+|       |-- __init__.py
+|       `-- dashboard/
+|           |-- __init__.py
+|           |-- *.py
+|           `-- static/
 |-- .env.example
 |-- .gitignore
 |-- pyproject.toml
@@ -103,7 +100,7 @@ Capstone_project/
 `-- requirements.txt
 ```
 
-Local virtual environments and downloaded datasets are excluded from version control.
+Local virtual environments, generated Python files, and downloaded datasets are excluded from version control.
 
 ## Development Environment
 
@@ -127,6 +124,14 @@ The initial data analysis, visualization, dashboard, forecasting, and configurat
    ```bash
    python -m pip check
    ```
+
+### Run the Dashboard
+
+From the project directory:
+
+```bash
+python -m streamlit run src/app.py
+```
 
 ### Environment Variables
 

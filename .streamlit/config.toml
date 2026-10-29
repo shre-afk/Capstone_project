@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#C09262"          # Warm Bronze for buttons, sliders, active items
+backgroundColor = "#F3EADF"       # Sand background
+secondaryBackgroundColor = "#1E3045" # Midnight Blue for sidebar & card headers
+textColor = "#252525"             # Dark Charcoal for body text
+font = "sans serif"
