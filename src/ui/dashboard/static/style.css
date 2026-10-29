@@ -1,0 +1,48 @@
+/* ========================================================
+   1. SIDEBAR BASE THEME
+   ======================================================== */
+[data-testid="stSidebar"] {
+    background-color: #1E3045 !important;
+}
+
+/* ========================================================
+   2. TOP LOGO SIZING
+   ======================================================== */
+[data-testid="stSidebar"] [data-testid="stImage"] img,
+img[alt="Logo"] {
+    width: 100% !important;
+    max-width: 220px !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+/* ========================================================
+   3. NAVIGATION LINKS
+   ======================================================== */
+/* All navigation link labels and icons: Cream/Sand (#F3EADF) */
+[data-testid="stSidebarNav"] span,
+[data-testid="stSidebarNav"] svg {
+    color: #F3EADF !important;
+    fill: #F3EADF !important;
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+}
+
+/* Active Page Highlight: Warm Bronze (#C09262) */
+[data-testid="stSidebarNav"] a[aria-current="page"] {
+    background-color: #C09262 !important;
+    border-radius: 8px !important;
+}
+
+[data-testid="stSidebarNav"] a[aria-current="page"] span,
+[data-testid="stSidebarNav"] a[aria-current="page"] svg {
+    color: #FFFFFF !important;
+    fill: #FFFFFF !important;
+    font-weight: 600 !important;
+}
+
+/* Hover state for inactive links */
+[data-testid="stSidebarNav"] a:hover {
+    background-color: rgba(192, 146, 98, 0.18) !important;
+    border-radius: 8px !important;
+}
