@@ -136,7 +136,7 @@ def get_latest(building_id):
     }
 
 
-# How much energy, EUR, CO2 in a period
+# How much energy, EUR, CO2 in a period (KPI = Key Performance Indicator)
 def get_kpis(building_id, start, end):
     """-> dict of headline numbers for one building & period"""
     building, kwh, start, end = _energy(building_id, start, end)
@@ -185,28 +185,106 @@ def get_timeseries(building_id, start, end, freq="1h"):
 
 # How much did we save comparing this period v/s the period (same length) just before
 def get_savings(building_id, start, end):
+    """-> energy_now vs energy_before (same period)"""
+    # Energy of THIS period
+    building, kwh_now, start, end = _energy(building_id, start, end)
+
+    # period before (same length)
+    length = end - start
+    before_start = start - length
+
+    # Energy of period BEFORE
+    building, kwh_before, _, _ = _energy(building_id, before_start, start)
+
+
+    # Totals & Difference
+    energy_now = calc.total_kwh(kwh_now)
+    energy_before = calc.total_kwh(kwh_before)
+    energy_saved = round(energy_before - energy_now, 2)     # +ve = used less | -ve = used more
+    change_percent = calc.change_pct(energy_now, energy_before)
+
+    # Worth of saving
+    prices = settings.CONFIG["prices"]
+    saved_eur = calc.cost_eur(energy_saved, prices["eur_per_kwh"])
+    saved_co2 = calc.co2_kg(energy_saved, prices["co2_kg_per_kwh"])
+
     return {
-        "energy_kwh": 19850.4, "previous_kwh": 21012.9, "saved_kwh": 1162.5,
-        "saved_eur": 348.75, "saved_co2_kg": 441.8, "change_pct": -5.5,
+        "energy_kwh": energy_now,
+        "previous_kwh": energy_before,
+        "saved_kwh": energy_saved,
+        "saved_eur": saved_eur,
+        "saved_co2_kg": saved_co2,
+        "change_pct": change_percent,
     }
 
 
 # Sustainability score 0-100 and grade A-E
 def get_score(building_id, start, end):
+    """Sustainability score 0-100 & Grade A-E"""
+
+    building, kwh, start, end = _energy(building_id, start, end)
+    if kwh.empty:
+        raise ValueError(f"No readings for building {building_id} in this period")
+
+    # P1: Intensity
+    energy = calc.total_kwh(kwh)
+    days = _days(start, end)
+
+    eui = calc.eui_per_year(energy, building.floor_area_m2, days)
+    benchmark = settings.CONFIG["benchmarks"][building.building_type]   # e.g. "business" -> 100
+    
+    intensity = calc.intensity_points(eui, benchmark)
+
+
+    # P2: After-hours
+    energy_share, time_share = calc.after_hours(kwh, building.is_open)
+    after_hours = calc.after_hours_points(energy_share, time_share)
+
+    # Combine with the weights from config.toml
+    parts = {"intensity": intensity, "after_hours": after_hours}
+    weights = settings.CONFIG["score"]["weights"]
+    score = calc.sustainability_score(parts, weights)
+
+    grd = calc.grade(score)
+
     return {
-        "score": 61.2, "grade": "C", "intensity_points": 53.4, "after_hours_points": 72.9,
-        "eui_kwh_m2_yr": 96.6, "benchmark_kwh_m2_yr": 100,
-        "after_hours_energy_share": 0.174, "closed_time_share": 0.643,
+        "score": score,
+        "grade": grd,
+        "intensity_points": intensity,
+        "after_hours_points": after_hours,
+        "eui_kwh_m2_yr": eui,
+        "benchmark_kwh_m2_yr": benchmark,
+        "after_hours_energy_share": round(energy_share, 3),
+        "closed_time_share": round(time_share, 3),
     }
 
 
 
 # Expected energy per hour for the next days
 def get_forecast(building_id, days=7):
-    first = pd.Timestamp("2016-12-01 00:00", tz=settings.LOCAL_TZ)
-    index = pd.date_range(first, periods=days * 24, freq="h")
-    
-    return pd.DataFrame({"forecast_kwh": 27.5}, index=index)
+    """-> table: one row per future hour, column forecast_kwh"""
 
+    # Find the newest reading (and check id exists)
+    with closing(database.connect()) as con:
+        _building(con, building_id)     # unknown id -> ValueError
+        last = database.latest_ts(con, building_id)
+
+    if last is None:
+        raise ValueError(f"No readings for building {building_id}")
+
+    # Load the last 4 weeks, up including newest reading
+    four_weeks_ago = last - pd.Timedelta(weeks=4)
+    just_after_last = last + pd.Timedelta("15min")  # end is excluded -> +15 min keeps 'last'
+    building, kwh, _, _ = _energy(building_id, four_weeks_ago, just_after_last)
+
+    # 15-min values -> hourly values (drop hours w/ no data -> avoid spoiling average)
+    hourly = kwh.resample("1h").sum(min_count=1)
+    hourly = hourly.dropna()
+
+
+    forecast = calc.forecast_same_hour(hourly, days=days)
+
+    # Series data -> one-column table
+    return forecast.to_frame()
 
 
