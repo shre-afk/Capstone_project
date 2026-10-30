@@ -56,7 +56,8 @@ def run(pause = None):
     # skip what is already in database (continue after Ctrl+C)
     last = database.latest_ts(con)
     if last is not None:
-        stamps = [ts for ts in stamps if ts > last]
+        stamps = [ts for ts in stamps if ts >= last]    
+        # Bug Fix: was (ts > last) -> slots can be half saved => this resends the same slot again - INSERT OR IGNORE skips readings already there
 
     print(f"Replaying {len(stamps)} intervals, one every {pause} s. Ctrl+C to stop.")
 
