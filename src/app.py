@@ -12,7 +12,7 @@ st.set_page_config(
 dashboard_dir = Path(__file__).parent / "ui" / "dashboard"
 static_dir = dashboard_dir / "static"
 css_file = static_dir / "style.css"
-logo_file = static_dir / "Capstone_Logo.png"
+logo_file = dashboard_dir / "static" / "Capstone_Logo.png"
 
 if css_file.exists():
     st.html(f"<style>{css_file.read_text(encoding='utf-8')}</style>")
@@ -36,27 +36,27 @@ pages = st.navigation(
         st.Page(overview_page, title="Overview", icon=":material/overview:"),
         st.Page(buildings_page, title="Buildings", icon=":material/apartment:"),
         st.Page(
-            "ui/dashboard/EnergyAnalytics.py",
+            dashboard_dir / "EnergyAnalytics.py",
             title="Energy Analytics",
             icon=":material/energy_program_time_used:",
         ),
         st.Page(
-            "ui/dashboard/Forecasting.py",
+            dashboard_dir / "Forecasting.py",
             title="Forecasting",
             icon=":material/robot_2:",
         ),
         st.Page(
-            "ui/dashboard/Advisor.py",
+            dashboard_dir / "Advisor.py",
             title="AI Advisor",
             icon=":material/support_agent:",
         ),
         st.Page(
-            "ui/dashboard/Reports.py",
+            dashboard_dir / "Reports.py",
             title="Reports",
             icon=":material/description:",
         ),
         st.Page(
-            "ui/dashboard/Properties.py",
+            dashboard_dir / "Properties.py",
             title="Properties",
             icon=":material/business_center:",
         ),
