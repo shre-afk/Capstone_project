@@ -20,3 +20,9 @@ htmlcov/
 # IDE
 .vscode/
 .idea/
+
+# SQLite database
+energy.db*
+
+# Downloaded datasets
+data/raw/*.csv
