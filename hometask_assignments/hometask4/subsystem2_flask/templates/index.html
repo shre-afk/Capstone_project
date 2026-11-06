@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Energy data - Subsystem 2</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; }
+    table { border-collapse: collapse; }
+    th, td { border: 1px solid #999; padding: 6px 12px; }
+  </style>
+</head>
+<body>
+  <h1>Buildings in the database</h1>
+  <table>
+    <tr><th>ID</th><th>Name</th><th>Type</th><th>Floor area (m²)</th><th>Data</th></tr>
+    {% for b in buildings %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td>{{ b.name }}</td>
+      <td>{{ b.type }}</td>
+      <td>{{ b.floor_area_m2 }}</td>
+      <td><a href="/api/buildings/{{ b.id }}/kpis">KPIs</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
