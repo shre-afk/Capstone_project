@@ -16,13 +16,15 @@ Joywin's self-contained individual solution is in `hometask_assignments/hometask
 
 ### OOP requirements and class diagram
 
-| Requirement | Joywin's implementation |
-|---|---|
-| Abstract base class | `StreamProcessor(ABC)` declares `process()` with `@abstractmethod` |
-| Inheritance and polymorphism | `PowerFilter`, `CarbonTransformer`, and `Pipeline` implement the same `process(reading)` interface |
-| Operator overloading | `filter_stage | transform_stage` calls `__or__` to create a pipeline |
-| Iterator | `MeterStream` explicitly implements `__iter__` and `__next__` |
-| Generators | `sample_readings()` yields events and `run()` yields accepted results lazily |
+| Requirement | Ourvish's implementation (`subsystem2_stream`) | Joywin's implementation (`subsystem3_ai_stream`) |
+|---|---|---|
+| Abstract base class | `StreamProcessor(ABC)` declares `process()` with `@abstractmethod` | `StreamProcessor(ABC)` declares `process()` with `@abstractmethod` |
+| Inheritance and polymorphism | Seven processing steps and `Pipeline` share the `process(reading)` interface | `PowerFilter`, `CarbonTransformer`, and `Pipeline` implement the same `process(reading)` interface |
+| Operator overloading | `__or__` / `__add__` join steps into a `Pipeline` | `filter_stage | transform_stage` calls `__or__` to create a pipeline |
+| Iterator | `MeterStream` implements `__iter__` and `__next__` | `MeterStream` explicitly implements `__iter__` and `__next__` |
+| Generators | `replay_feed()` yields real OPSD readings; `run()` yields the survivors | `sample_readings()` yields events and `run()` yields accepted results lazily |
+
+Subsystem 3 (Joywin):
 
 ```mermaid
 classDiagram
@@ -60,13 +62,52 @@ classDiagram
     PowerFilter ..> MeterReading : filters
 ```
 
+Subsystem 2 (Ourvish):
+
+```mermaid
+classDiagram
+    class StreamProcessor {
+        <<abstract>>
+        +process(reading)*
+        +run(stream) generator
+        +__or__(other) Pipeline
+        +__add__(other) Pipeline
+    }
+    StreamProcessor <|-- Pipeline
+    StreamProcessor <|-- InactiveMeterFilter
+    StreamProcessor <|-- IntervalCalculator
+    StreamProcessor <|-- PlausibilityFilter
+    StreamProcessor <|-- ThresholdFilter
+    StreamProcessor <|-- CostCarbonCalculator
+    StreamProcessor <|-- AfterHoursFlagger
+    StreamProcessor <|-- LoadBalanceTracker
+    Pipeline o-- StreamProcessor : ordered steps
+    class MeterStream {
+        +int count
+        +__iter__()
+        +__next__() MeterReading
+    }
+    class MeterReading {
+        +column
+        +building
+        +building_type
+        +ts
+        +total_kwh
+        +kwh
+        +power_kw
+        +extras
+    }
+    MeterStream ..> MeterReading : hands out
+```
+
 ### Run
 
 ```bash
+python hometask_assignments/hometask2/subsystem2_stream/main.py
 python -m hometask_assignments.hometask2.subsystem3_ai_stream.demo
 ```
 
-Run from the repository root. Five simulated meter events produce three accepted energy/carbon results. Inactive and sub-threshold readings are filtered out. The implementation uses only the Python standard library.
+Run from the repository root. Subsystem 2 replays 42 real OPSD meter readings, of which 20 pass its filters, and prints energy, cost, CO2 and the after-hours share per building. In Subsystem 3, five simulated meter events produce three accepted energy/carbon results. Inactive and sub-threshold readings are filtered out. The implementation uses only the Python standard library.
 
 ### Presentation link
 
