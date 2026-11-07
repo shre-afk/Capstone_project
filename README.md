@@ -2,6 +2,76 @@
 
 An academic capstone project focused on energy monitoring, consumption analysis, forecasting, and AI-assisted energy optimization for German properties.
 
+## Hometask 2 · Real-Time Data Processing
+
+Joywin's self-contained individual solution is in `hometask_assignments/hometask2/subsystem3_ai_stream/`. Ourvish's separate implementation is in `subsystem2_stream/`. See the [assignment README](hometask_assignments/hometask2/readme.md).
+
+### Team overview
+
+| Member | Matriculation number | Assigned subsystem |
+|---|---|---|
+| Shreya Patil | 7226047 | Energy Dashboard & Reporting |
+| Ourvish Lofur | 7226994 | Data Management & Energy Analytics |
+| Joywin Bennis | 7225872 | AI Analyzer & Integration |
+
+### OOP requirements and class diagram
+
+| Requirement | Joywin's implementation |
+|---|---|
+| Abstract base class | `StreamProcessor(ABC)` declares `process()` with `@abstractmethod` |
+| Inheritance and polymorphism | `PowerFilter`, `CarbonTransformer`, and `Pipeline` implement the same `process(reading)` interface |
+| Operator overloading | `filter_stage | transform_stage` calls `__or__` to create a pipeline |
+| Iterator | `MeterStream` explicitly implements `__iter__` and `__next__` |
+| Generators | `sample_readings()` yields events and `run()` yields accepted results lazily |
+
+```mermaid
+classDiagram
+    class StreamProcessor {
+        <<abstract>>
+        +process(reading)*
+        +__or__(other) Pipeline
+        +run(stream) generator
+    }
+    class Pipeline {
+        +steps
+        +process(reading)
+    }
+    class PowerFilter {
+        +min_power_kw
+        +process(reading)
+    }
+    class CarbonTransformer {
+        +process(reading)
+    }
+    class MeterReading {
+        +building
+        +power_kw
+        +active
+    }
+    class MeterStream {
+        +__iter__()
+        +__next__() MeterReading
+    }
+    StreamProcessor <|-- Pipeline
+    StreamProcessor <|-- PowerFilter
+    StreamProcessor <|-- CarbonTransformer
+    Pipeline o-- StreamProcessor : ordered stages
+    MeterStream ..> MeterReading : yields
+    PowerFilter ..> MeterReading : filters
+```
+
+### Run
+
+```bash
+python -m hometask_assignments.hometask2.subsystem3_ai_stream.demo
+```
+
+Run from the repository root. Five simulated meter events produce three accepted energy/carbon results. Inactive and sub-threshold readings are filtered out. The implementation uses only the Python standard library.
+
+### Presentation link
+
+**Five-minute video URL pending recording.**
+
 ## Project Overview
 
 The project aims to develop a Python-based prototype that helps users understand electricity consumption patterns, explore historical energy data, forecast future demand, and obtain AI-assisted energy-saving recommendations.
