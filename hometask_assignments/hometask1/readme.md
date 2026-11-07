@@ -68,6 +68,90 @@ cd subsystem2_data_analytics
 python demo.py
 ```
  
+### Subsystem 3 · AI Analyzer & Integration
+
+**Joywin Bennis · Matr. no. 7225872 · joywin.bennis004@stud.fh-dortmund.de**
+
+Three classes implement the advisor subsystem's object-oriented architecture:
+
+| Class | Responsibility | Initialization/setup | Encapsulation examples |
+|---|---|---|---|
+| `AdvisorSettings` | Language, response style, and system instructions | `__init__`, `configure` | `get_language` / `set_language`, `get_system_prompt` / `set_system_prompt` |
+| `EnergyDataTool` | Read-only access to the analytics subsystem through an injected reader | `__init__`, `initialize(reader)` | Name/description/reader getters and setters; cached results returned as copies |
+| `EnergyAdvisor` | Combine settings, analytical results, and a model runnable to answer a question | `__init__`, `initialize(chain)` | Name/settings/data-tool getters and setters; controlled answer retrieval |
+
+```mermaid
+classDiagram
+    EnergyAdvisor --> AdvisorSettings : uses configuration
+    EnergyAdvisor --> EnergyDataTool : reads analytics
+    EnergyAdvisor ..> LangChainRunnable : invokes messages
+    class AdvisorSettings {
+        -str _language
+        -str _response_style
+        -str _system_prompt
+        +__init__(language, response_style, system_prompt)
+        +configure(language, response_style)
+        +get_language()
+        +set_language(language)
+        +get_response_style()
+        +set_response_style(response_style)
+        +get_system_prompt()
+        +set_system_prompt(system_prompt)
+        +build_system_message()
+    }
+    class EnergyDataTool {
+        -str _name
+        -str _description
+        -object _reader
+        -dict _last_result
+        +__init__(name, description, reader)
+        +initialize(reader)
+        +fetch(building_id, start, end)
+        +get_name()
+        +set_name(name)
+        +get_description()
+        +set_description(description)
+        +get_reader()
+        +set_reader(reader)
+        +get_last_result()
+    }
+    class EnergyAdvisor {
+        -str _name
+        -AdvisorSettings _settings
+        -EnergyDataTool _data_tool
+        -object _chain
+        -str _last_answer
+        +__init__(name, settings, data_tool)
+        +initialize(chain)
+        +ask(question, building_id, start, end)
+        +get_name()
+        +set_name(name)
+        +get_settings()
+        +set_settings(settings)
+        +get_data_tool()
+        +set_data_tool(data_tool)
+        +get_last_answer()
+    }
+    class LangChainRunnable {
+        <<external interface>>
+        +invoke(messages)
+    }
+```
+
+Run Joywin's demonstration **from the repository root**:
+
+```bash
+python -m hometask_assignments.hometask1.subsystem3_ai.demo
+```
+
+The demonstration uses only the Python standard library. It constructs all three classes, initializes their collaborators, asks a question using sample KPIs, changes the language through a setter, checks that returned copies protect stored values, and shows invalid configuration being rejected.
+
+The demo reader returns synthetic analytical results; the demo runnable produces an explicitly labeled deterministic response. No model API call is made. The advisor accepts the `invoke(messages)` interface used by LangChain chat models and string-output chains. See the [official LangChain model interface](https://docs.langchain.com/oss/python/langchain/models#invoke).
+
+To integrate later, initialize `EnergyDataTool` with `backend.analysis.api.get_kpis` and initialize `EnergyAdvisor` with the application's configured LangChain runnable. The homework classes do not modify the existing data or dashboard implementations.
+
 ## Presentation
  
-Team video (3 to 5 min): TO-PASTE-THE-LINK-HERE
+Team video (3 to 5 min): **Link pending recording.**
+
+All three members must explain their own implemented classes in the same presentation. Suggested timing: introduction (20 seconds), Shreya's UI classes (60 seconds), Ourvish's data classes (60 seconds), Joywin's advisor classes (60 seconds), and the combined architecture/demo (30 seconds). Add the actual presentation URL here and in the root README after recording.

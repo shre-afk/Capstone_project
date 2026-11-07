@@ -2,6 +2,78 @@
 
 An academic capstone project focused on energy monitoring, consumption analysis, forecasting, and AI-assisted energy optimization for German properties.
 
+## Hometask 1 · Object-Oriented Concepts
+
+The OOP implementation is in `hometask_assignments/hometask1/` on branch `Homeassignment1`. See the [assignment README](hometask_assignments/hometask1/readme.md) for the subsystem layout and detailed class diagrams.
+
+### Team overview
+
+| Member | Matriculation number | Subsystem |
+|---|---|---|
+| Shreya Patil | 7226047 | 1 · Energy Dashboard & Reporting |
+| Ourvish Lofur | 7226994 | 2 · Data Management & Energy Analytics |
+| Joywin Bennis | 7225872 | 3 · AI Analyzer & Integration |
+
+### System design
+
+```mermaid
+classDiagram
+    Building "1" *-- "*" Zone : contains
+    Zone "1" o-- "*" Meter : contains
+    Building <|-- Home
+    Building <|-- Business
+    Building <|-- PublicBuilding
+    Meter <|-- EnergyMeter
+    EnergyAdvisor --> AdvisorSettings : configured by
+    EnergyAdvisor --> EnergyDataTool : retrieves KPIs through
+    EnergyDataTool ..> AnalyticsService : configured reader
+    EnergyAdvisor ..> LangChainRunnable : invokes
+    class Building {
+        <<abstract>>
+        +setup_whole_building(csv_column, max_kwh)
+        +get_name()
+        +set_name(name)
+    }
+    class AdvisorSettings {
+        +__init__(language, response_style, system_prompt)
+        +configure(language, response_style)
+        +get_language()
+        +set_language(language)
+    }
+    class EnergyDataTool {
+        +__init__(name, description, reader)
+        +initialize(reader)
+        +fetch(building_id, start, end)
+        +get_reader()
+        +set_reader(reader)
+    }
+    class EnergyAdvisor {
+        +__init__(name, settings, data_tool)
+        +initialize(chain)
+        +ask(question, building_id, start, end)
+        +get_settings()
+        +set_settings(settings)
+    }
+    class AnalyticsService {
+        <<external interface>>
+        +get_kpis(building_id, start, end)
+    }
+    class LangChainRunnable {
+        <<external interface>>
+        +invoke(messages)
+    }
+```
+
+Joywin's subsystem contains three classes: `AdvisorSettings`, `EnergyDataTool`, and `EnergyAdvisor`. Each has a constructor, setup/configuration logic, and getters/setters. Its offline demonstration runs from the repository root:
+
+```bash
+python -m hometask_assignments.hometask1.subsystem3_ai.demo
+```
+
+### Presentation link
+
+**Team presentation URL pending recording.** The shared video must be 3–5 minutes and include every member explaining their implemented classes. Add the same direct video URL here and in the assignment README.
+
 ## Project Overview
 
 The project aims to develop a Python-based prototype that helps users understand electricity consumption patterns, explore historical energy data, forecast future demand, and obtain AI-assisted energy-saving recommendations.
