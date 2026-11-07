@@ -2,6 +2,89 @@
 
 An academic capstone project focused on energy monitoring, consumption analysis, forecasting, and AI-assisted energy optimization for German properties.
 
+## Hometask 2 · Real-Time Data Processing
+
+The implementation is in `hometask_assignments/hometask2/`. It replays historical electricity counter readings through composable filters and transformations. See the [assignment README](hometask_assignments/hometask2/readme.md) for the processing rules and demonstrations.
+
+### Team overview
+
+| Member | Matriculation number | Assigned subsystem |
+|---|---|---|
+| Shreya Patil | 7226047 | Energy Dashboard & Reporting |
+| Ourvish Lofur | 7226994 | Data Management & Energy Analytics |
+| Joywin Bennis | 7225872 | AI Analyzer & Integration |
+
+### OOP implementation and system design
+
+`StreamProcessor` defines an abstract `process` contract. Specialized processors and `Pipeline` implement it polymorphically; `|` or `+` composes stages. `MeterStream` explicitly implements `__iter__` and `__next__`, while input and output generators process events lazily.
+
+```mermaid
+classDiagram
+    class StreamProcessor {
+        <<abstract>>
+        +process(reading)*
+        +run(stream) generator
+        +__or__(other) Pipeline
+        +__add__(other) Pipeline
+    }
+    class Pipeline {
+        +steps
+        +process(reading)
+    }
+    class MeterStream {
+        +count
+        +__iter__()
+        +__next__() MeterReading
+    }
+    class MeterReading {
+        +building
+        +building_type
+        +ts
+        +interval_start
+        +total_kwh
+        +kwh
+        +power_kw
+        +extras
+    }
+    class AdvisorSignalFilter {
+        +min_power_kw
+        +high_power_kw
+        +process(reading)
+    }
+    class EnergyInsightTransformer {
+        +process(reading)
+    }
+    StreamProcessor <|-- Pipeline
+    StreamProcessor <|-- InactiveMeterFilter
+    StreamProcessor <|-- IntervalCalculator
+    StreamProcessor <|-- PlausibilityFilter
+    StreamProcessor <|-- ThresholdFilter
+    StreamProcessor <|-- CostCarbonCalculator
+    StreamProcessor <|-- AfterHoursFlagger
+    StreamProcessor <|-- LoadBalanceTracker
+    StreamProcessor <|-- AdvisorSignalFilter
+    StreamProcessor <|-- EnergyInsightTransformer
+    Pipeline o-- StreamProcessor : ordered steps
+    MeterStream ..> MeterReading : yields
+    AdvisorSignalFilter ..> MeterReading : selects signals
+    EnergyInsightTransformer ..> MeterReading : adds advisor context
+```
+
+### Run
+
+From the repository root:
+
+```bash
+python -m hometask_assignments.hometask2.subsystem2_stream.main
+python -m hometask_assignments.hometask2.subsystem3_ai_stream.demo
+```
+
+The data demo retains 20 of 42 readings. The advisor output selects 7 attention signals after energy balances are computed. Rules and estimated costs/carbon are configurable demonstration assumptions; output is not a full consumption report or a learned anomaly diagnosis.
+
+### Presentation link
+
+**Five-minute video URL pending recording.** Add the actual link here and in the assignment README.
+
 ## Project Overview
 
 The project aims to develop a Python-based prototype that helps users understand electricity consumption patterns, explore historical energy data, forecast future demand, and obtain AI-assisted energy-saving recommendations.
