@@ -8,6 +8,20 @@ The project aims to develop a Python-based prototype that helps users understand
 
 The prototype uses historical electricity data and analytical methods. It does not require physical energy meters or live IoT devices.
 
+## Hometask 4 · Exception handling and automated tests
+
+The independent implementations are in `hometask_assignments/hometask4/`. See the [assignment README](hometask_assignments/hometask4/readme.md) for both subsystem handlers and test suites.
+
+Subsystem 3's advisor uses `AdvisorErrorHandler` to convert missing summaries, invalid metrics, database failures, and unexpected errors into appropriate HTTP/JSON responses. Its repository preserves database exception causes and closes connections after queries. The app validates analytical values before producing advice.
+
+Install the [advisor dependencies](hometask_assignments/hometask4/subsystem3_advisor/requirements.txt), then run from the repository root:
+
+```bash
+python -m pytest hometask_assignments/hometask4/subsystem3_advisor/tests -q
+```
+
+The advisor has **15 passing tests** covering normal output and failure cases. These tests use local fixtures and mocks. See [error classes, the test inventory, and application setup](hometask_assignments/hometask4/subsystem3_advisor/readme.md).
+
 ## Project Objectives
 
 - Analyze historical electricity consumption and energy-system data.
@@ -29,11 +43,13 @@ The initial scope includes:
 
 Physical meter integration, live IoT monitoring, and production deployment are outside the initial scope.
 
-## Project Team
+## Team Overview
 
-- Shreya Patil
-- Joywin Bennis
-- Ourvish Lofur
+| Member | Matriculation number | Assigned subsystem |
+|---|---|---|
+| Shreya Patil | 7226047 | Energy Dashboard & Reporting |
+| Ourvish Lofur | 7226994 | Data Management & Energy Analytics |
+| Joywin Bennis | 7225872 | AI Analyzer & Integration |
 
 ## System Subsystems
 
