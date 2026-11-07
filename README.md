@@ -64,6 +64,12 @@ classDiagram
     }
 ```
 
+Ourvish's subsystem contains the data model: an abstract `Building` (with `Home`, `Business` and `PublicBuilding`) has `Zone`s, and a zone has `Meter`s (`EnergyMeter` for electricity). All attributes are private with getters/setters, the constructors call the setters, and `configure` / `setup_whole_building` are the setup methods. Its demonstration runs from the repository root:
+
+```bash
+python hometask_assignments/hometask1/subsystem2_data_analytics/demo.py
+```
+
 Joywin's subsystem contains three classes: `AdvisorSettings`, `EnergyDataTool`, and `EnergyAdvisor`. Each has a constructor, setup/configuration logic, and getters/setters. Its offline demonstration runs from the repository root:
 
 ```bash
