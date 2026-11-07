@@ -86,3 +86,8 @@ python -m pytest hometask_assignments/hometask4/subsystem3_advisor/tests -q
 The advisor suite checks normal web output, advice rules, invalid summaries, missing resources, safe server errors, parameterized SQL, and connection cleanup. It runs without MySQL using local fixtures and mocked connections. Recorded result: **15 passed**.
 
 The two implementations are independent. Their production data and application files are contained in their respective folders.
+
+## Video
+
+**Video:** [Hometask 4 presentation (Google Drive)](https://drive.google.com/file/d/1UIcvvt0XsGQeFehPTzVk0eQ7E7WKkEmG/view?usp=drive_link)  
+All team videos: [Google Drive folder](https://drive.google.com/drive/folders/1eVMkck2AjgFbLdQfN-eUD_lYISwNbn4x?usp=drive_link)

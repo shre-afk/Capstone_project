@@ -124,6 +124,11 @@ classDiagram
     DataErrorHandler ..> DataSubsystemError : handles all subclasses
 ```
 
+### Video
+
+**Video:** [Hometask 4 presentation (Google Drive)](https://drive.google.com/file/d/1UIcvvt0XsGQeFehPTzVk0eQ7E7WKkEmG/view?usp=drive_link)  
+All team videos: [Google Drive folder](https://drive.google.com/drive/folders/1eVMkck2AjgFbLdQfN-eUD_lYISwNbn4x?usp=drive_link)
+
 ## Project Objectives
 
 - Analyze historical electricity consumption and energy-system data.
