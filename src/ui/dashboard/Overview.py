@@ -2,8 +2,17 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from ui.dashboard.errors import DashboardErrorHandler, DashboardOperationError
+
 from backend.analysis import api
 from ui.dashboard.components import DashboardHeader, MetricCard, TYPE_LABELS
+
+def _dashboard_call(operation, callback, *args, **kwargs):
+    try:
+        return DashboardErrorHandler.execute(operation, callback, *args, **kwargs)
+    except DashboardOperationError as error:
+        st.error(str(error))
+        st.stop()
 
 
 def styled_table(frame):
