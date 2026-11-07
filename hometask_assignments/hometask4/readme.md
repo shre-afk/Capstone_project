@@ -7,6 +7,10 @@ Each implementation has its own error-handling class and test suite. Team identi
 | Data Management & Analytics | `DataErrorHandler` | 15 | [Subsystem 2](subsystem2_flask/readme.md) |
 | AI Analyzer & Integration | `AdvisorErrorHandler` | 15 | [Subsystem 3](subsystem3_advisor/readme.md) |
 
+## System design
+
+See the [advisor UML class diagram](../../README.md#advisor-uml-class-diagram) in the main README for the exception hierarchy, repository, and error handler.
+
 ## Advisor test command
 
 From the repository root, install `subsystem3_advisor/requirements.txt`, then run:

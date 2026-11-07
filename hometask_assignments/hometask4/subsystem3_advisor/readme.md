@@ -17,6 +17,10 @@ On Windows, create the environment with `python -m venv .venv` and activate `.ve
 
 Result: **15 passed**. Tests use fresh local summary fixtures and mocked MySQL connections; no running database or model credentials are needed for this suite.
 
+## UML class diagram
+
+The [main README diagram](../../../README.md#advisor-uml-class-diagram) shows the advisor exception hierarchy and the relationships between the repository and Flask error handler.
+
 ## Error handling
 
 | Exception | HTTP status | Meaning |

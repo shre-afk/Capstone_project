@@ -22,6 +22,48 @@ python -m pytest hometask_assignments/hometask4/subsystem3_advisor/tests -q
 
 The advisor has **15 passing tests** covering normal output and failure cases. These tests use local fixtures and mocks. See [error classes, the test inventory, and application setup](hometask_assignments/hometask4/subsystem3_advisor/readme.md).
 
+### Advisor UML class diagram
+
+```mermaid
+classDiagram
+    direction TB
+    Exception <|-- AdvisorError
+    AdvisorError <|-- SummaryNotFoundError
+    AdvisorError <|-- InvalidSummaryError
+    AdvisorError <|-- AdvisorDatabaseError
+
+    class AdvisorError {
+        +int status_code = 500
+    }
+    class SummaryNotFoundError {
+        +int status_code = 404
+    }
+    class InvalidSummaryError {
+        +int status_code = 422
+    }
+    class AdvisorDatabaseError {
+        +int status_code = 503
+    }
+    class EnergyRepository {
+        -dict _settings
+        +__init__(settings)
+        +list_summaries()
+        +get_summary(building_id)
+        -_query(sql, params)
+    }
+    class AdvisorErrorHandler {
+        +__init__(app)
+        +handle_advisor_error(error)
+        +handle_http_error(error)
+        +handle_unexpected_error(error)
+    }
+
+    EnergyRepository ..> AdvisorDatabaseError : raises on MySQL failure
+    AdvisorErrorHandler ..> AdvisorError : handles subclasses
+```
+
+`create_app()` registers the handler and connects routes to `EnergyRepository`. A missing summary raises `SummaryNotFoundError`; `build_advice()` raises `InvalidSummaryError` for invalid metrics. The handler returns JSON with the appropriate HTTP status.
+
 ## Project Objectives
 
 - Analyze historical electricity consumption and energy-system data.
