@@ -1,4 +1,5 @@
 from pathlib import Path
+from backend.analysis import api
 
 import streamlit as st
 
@@ -9,13 +10,20 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-dashboard_dir = Path(__file__).parent / "ui" / "dashboard"
-static_dir = dashboard_dir / "static"
-css_file = static_dir / "style.css"
-logo_file = dashboard_dir / "static" / "Capstone_Logo.png"
+BASE_DIR = Path(__file__).parent
+css_file = BASE_DIR / "styles" / "style.css"
 
 if css_file.exists():
-    st.html(f"<style>{css_file.read_text(encoding='utf-8')}</style>")
+    with open(css_file, encoding="utf-8") as f:
+        st.markdown(
+            f"<style>{f.read()}</style>",
+            unsafe_allow_html=True
+        )
+else:
+    st.warning(f"CSS file not found: {css_file}")
+
+dashboard_dir = Path(__file__).parent / "ui" / "dashboard"
+logo_file = dashboard_dir / "static" / "Capstone_Logo.png"
 
 if logo_file.exists():
     st.logo(str(logo_file), size="large")
@@ -25,16 +33,10 @@ def overview_page():
     st.title("Overview")
     st.write("Monitor and analyze electricity consumption across German properties.")
 
-
-def buildings_page():
-    st.title("Buildings")
-    st.write("Overview of individual facilities and meter metadata.")
-
-
 pages = st.navigation(
     [
         st.Page(overview_page, title="Overview", icon=":material/overview:"),
-        st.Page(buildings_page, title="Buildings", icon=":material/apartment:"),
+        st.Page(dashboard_dir / "Buildings.py", title="Buildings", icon=":material/apartment:"),
         st.Page(
             dashboard_dir / "EnergyAnalytics.py",
             title="Energy Analytics",

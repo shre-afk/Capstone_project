@@ -1,0 +1,38 @@
+/*Logo Setup*/
+[data-testid="stSidebar"] img[alt="Logo"] {
+    width: 100% !important;
+    max-width: 260px !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+/* Total Buildings */
+.st-key-total_buildings {
+    background-color: #E4EBE5;
+    border: 1px solid #CCD9CE;
+    border-radius: 16px;
+    padding: 20px;
+    min-height: 135px;
+    box-shadow: 0 4px 12px rgba(32, 52, 75, 0.06);
+
+}
+
+/* Total Area */
+.st-key-total_area {
+    background-color: #DFE8EF;
+    border: 1px solid #C9D7E2;
+    border-radius: 16px;
+    padding: 20px;
+    min-height: 135px;
+    box-shadow: 0 4px 12px rgba(32, 52, 75, 0.06);
+}
+
+/* Building Types */
+.st-key-number_of_types {
+    background-color: #F1E4D0;
+    border: 1px solid #E3D1B4;
+    border-radius: 16px;
+    padding: 20px;
+    min-height: 135px;
+    box-shadow: 0 4px 12px rgba(32, 52, 75, 0.06);
+}
