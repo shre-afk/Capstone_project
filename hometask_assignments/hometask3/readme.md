@@ -42,3 +42,8 @@ python -m hometask_assignments.hometask3.subsystem3_advisor.run
 ```
 
 Open http://127.0.0.1:5002/ for the HTML page or `/api/summaries` for JSON output. Advice is rule-based for this prototype.
+
+## Video
+
+**Video:** [Hometask 3 presentation (Google Drive)](https://drive.google.com/file/d/1uTzI0v6frOjbFXNwuDCTs-LQQjIdUd08/view?usp=drive_link)  
+All team videos: [Google Drive folder](https://drive.google.com/drive/folders/1eVMkck2AjgFbLdQfN-eUD_lYISwNbn4x?usp=drive_link)

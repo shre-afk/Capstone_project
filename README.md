@@ -163,7 +163,8 @@ The approved capstone UML diagrams for the complete system can be added here whe
 
 ## Team Video Presentation
 
-**Presentation link:** Pending team recording and upload. Add the direct YouTube, Loom, or Google Drive URL here when available.
+**Video:** [Hometask 3 presentation (Google Drive)](https://drive.google.com/file/d/1uTzI0v6frOjbFXNwuDCTs-LQQjIdUd08/view?usp=drive_link)  
+All team videos: [Google Drive folder](https://drive.google.com/drive/folders/1eVMkck2AjgFbLdQfN-eUD_lYISwNbn4x?usp=drive_link)
 
 ## System Subsystems
 
