@@ -1,15 +1,19 @@
-# Subsystem 3 · Advisor stream processing
+# Subsystem 3 · Individual energy stream solution
 
 Joywin Bennis · Matriculation number 7225872 · joywin.bennis004@stud.fh-dortmund.de
 
-`AdvisorSignalFilter` and `EnergyInsightTransformer` inherit the data subsystem's `StreamProcessor`. They support the same `process(reading)` contract and inherited `|`, `+`, and lazy `run(stream)` operations.
+A self-contained implementation of all four Hometask 2 OOP requirements:
 
-The filter selects significant after-hours use or high-power events. The transformer adds factual context and investigation suggestions. Run the advisor branch after the energy balance stage so advisor filtering does not change those balances.
-
-From the repository root:
+- `StreamProcessor`: ABC with an abstract `process()` method.
+- `PowerFilter` and `CarbonTransformer`: specialized processors sharing that API.
+- `Pipeline`: stages composed through overloaded `|`.
+- `MeterStream`: explicit iterator consuming the `sample_readings()` generator.
+- `run()`: generator producing transformed results lazily.
 
 ```bash
 python -m hometask_assignments.hometask2.subsystem3_ai_stream.demo
 ```
 
-No dependencies, API keys, or live model calls are required. See the [assignment README](../readme.md) for UML, configured thresholds, expected output, and interval timing.
+Run from the repository root. Five simulated 15-minute readings produce three accepted results. The filter removes inactive, non-finite, and below-threshold power readings. The transformer calculates kWh and kg CO2 using a demonstration factor.
+
+The code needs no database, model provider, third-party package, or subsystem 2 import. See the [assignment README](../readme.md) for the UML and calculation details.

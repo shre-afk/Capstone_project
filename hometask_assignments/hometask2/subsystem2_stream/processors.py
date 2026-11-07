@@ -78,7 +78,6 @@ class IntervalCalculator(StreamProcessor):
         previous_ts, previous_total = previous
         if reading.ts - previous_ts != INTERVAL:
             return None                              # a gap: can't say which 15 min it belongs to
-        reading.interval_start = previous_ts
         reading.kwh = round(reading.total_kwh - previous_total, 3)
         reading.power_kw = round(reading.kwh * 4, 2)  # kWh in 15 min x 4 = kW (as in get_latest)
         return reading
@@ -133,16 +132,10 @@ def is_open(building_type, ts):
  
  
 class AfterHoursFlagger(StreamProcessor):
-    """Classify aligned quarter-hour intervals by their starting time.
-
-    The counter timestamp is the end of the interval: 18:45–19:00 is still
-    within a business's opening hours, while 19:00–19:15 is after hours.
-    """
+    """Mark energy used while the building is closed (the after-hours part of get_score)"""
  
     def process(self, reading):
-        if reading.interval_start is None:
-            raise ValueError("calculate interval energy before flagging after-hours use")
-        reading.extras["after_hours"] = not is_open(reading.building_type, reading.interval_start)
+        reading.extras["after_hours"] = not is_open(reading.building_type, reading.ts)
         return reading
  
  

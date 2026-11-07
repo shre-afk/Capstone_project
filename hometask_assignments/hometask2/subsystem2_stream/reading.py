@@ -9,7 +9,6 @@ class MeterReading:
         self.building_type = building_type  # "home", "business" or "public"
         self.ts = ts                        # Berlin time of the reading (datetime)
         self.total_kwh = total_kwh          # the meter's counter; None = no value arrived
-        self.interval_start = None          # previous counter time, set by IntervalCalculator
         self.kwh = None                     # energy of the last 15 min, filled in later
         self.power_kw = None                # average power in those 15 min, filled in later
         self.extras = {}                    # transform steps write their results in here

@@ -2,10 +2,7 @@
  
 from datetime import datetime, timedelta
  
-if __package__:
-    from .reading import MeterReading
-else:
-    from reading import MeterReading
+from reading import MeterReading
  
 # The six buildings from the capstone's config.toml
 BUILDINGS = [
