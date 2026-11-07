@@ -165,6 +165,7 @@ To integrate later, initialize `EnergyDataTool` with `backend.analysis.api.get_k
 
 ## Presentation
 
-Team video (3 to 5 min): **Link pending recording.**
+Team video (3 to 5 min):
 
-All three members must explain their own implemented classes in the same presentation. Suggested timing: introduction (20 seconds), Shreya's UI classes (60 seconds), Ourvish's data classes (60 seconds), Joywin's advisor classes (60 seconds), and the combined architecture/demo (30 seconds). Add the actual presentation URL here and in the root README after recording.
+**Video:** [Hometask 1 presentation (Google Drive)](https://drive.google.com/file/d/1yi4dm8Y4fErex-7-d2I_7SP2XGJRgL6T/view?usp=drive_link)  
+All team videos: [Google Drive folder](https://drive.google.com/drive/folders/1eVMkck2AjgFbLdQfN-eUD_lYISwNbn4x?usp=drive_link)

@@ -78,7 +78,8 @@ python -m hometask_assignments.hometask1.subsystem3_ai.demo
 
 ### Presentation link
 
-**Team presentation URL pending recording.** The shared video must be 3–5 minutes and include every member explaining their implemented classes. Add the same direct video URL here and in the assignment README.
+**Video:** [Hometask 1 presentation (Google Drive)](https://drive.google.com/file/d/1yi4dm8Y4fErex-7-d2I_7SP2XGJRgL6T/view?usp=drive_link)  
+All team videos: [Google Drive folder](https://drive.google.com/drive/folders/1eVMkck2AjgFbLdQfN-eUD_lYISwNbn4x?usp=drive_link)
 
 ## Project Overview
 
