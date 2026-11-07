@@ -4,7 +4,7 @@ An academic capstone project focused on energy monitoring, consumption analysis,
 
 ## Project Overview
 
-The project aims to develop a Python-based prototype that helps users understand electricity consumption patterns, explore historical energy data, forecast future demand, and obtain AI-assisted energy-saving recommendations.
+The project aims to develop a Python-based prototype that helps users understand electricity consumption patterns, explore historical energy data, forecast future demand, and obtain AI-assisted energy recommendations for German properties.
 
 The prototype uses historical electricity data and analytical methods. It does not require physical energy meters or live IoT devices.
 
@@ -47,7 +47,7 @@ The dashboard subsystem uses three UI classes in `src/ui/dashboard/components.py
 | `MetricCard` | Validates and renders a styled dashboard metric. |
 | `PropertyCard` | Validates and renders a building card with a details action. |
 
-Each class initializes state in `__init__`, exposes validated properties as getters/setters, and provides an `initialize()` method to render its UI. The Overview and Buildings pages use these classes.
+Each class initializes state in `__init__`, exposes validated properties as getters/setters, and provides an `initialize()` method to render its UI. The Overview and Buildings pages use these classes to present consistent dashboard layouts.
 
 ## System Design
 
@@ -88,7 +88,56 @@ classDiagram
     note for PropertyCard "Used on Buildings"
 ```
 
-The approved capstone UML diagrams for the complete system can be added here when available; this diagram documents the implemented dashboard classes only.
+The core project logic and data model are represented by the following UML class diagram, which models the energy domain and the SQLite-backed persistence layer used by the analytics functions:
+
+```mermaid
+classDiagram
+    direction TB
+
+    class Building {
+        <<abstract>>
+        +id: int
+        +name: string
+        +floor_area_m2: float
+    }
+
+    class Home
+    class Business
+    class PublicBuilding
+
+    class Zone {
+        +id: int
+        +building_id: int
+        +name: string
+    }
+
+    class Meter {
+        +id: int
+        +zone_id: int
+        +kind: string
+        +unit: string
+        +source: string
+    }
+
+    class EnergyMeter
+
+    class Reading {
+        +meter_id: int
+        +ts_utc: datetime
+        +value: float
+    }
+
+    Building <|-- Home
+    Building <|-- Business
+    Building <|-- PublicBuilding
+
+    Building "1" *-- "1..*" Zone
+    Zone "1" *-- "1..*" Meter
+    Meter <|-- EnergyMeter
+    Meter "1" *-- "0..*" Reading
+```
+
+The approved capstone UML diagrams for the complete system can be added here when available; the diagrams above document the implemented dashboard classes and the underlying energy domain model.
 
 ## Team Video Presentation
 
@@ -117,7 +166,7 @@ AI Advisor technologies remain planned; integration and compatibility will be ve
 
 **Planned initial source:** Open Power System Data (OPSD), using relevant historical German electricity data.
 
-The selected dataset and its columns will be reviewed before analysis begins. National electricity-system data represents broader electricity demand and is not automatically equivalent to an individual property's consumption.
+The selected dataset and its columns will be reviewed before analysis begins. National electricity-system data represents broader electricity demand and is not automatically equivalent to an individual building's specific profile.
 
 ## Technology Stack
 
@@ -135,7 +184,6 @@ The selected dataset and its columns will be reviewed before analysis begins. Na
 | Planned containerization | Docker |
 
 ## Repository Structure
-
 
 ```text
 Capstone_project/
@@ -168,7 +216,7 @@ Local virtual environments, generated Python files, and downloaded datasets are 
 
 The project currently uses Python 3.14.7 in a repository-local virtual environment.
 
-The initial data analysis, visualization, dashboard, forecasting, and configuration dependencies have been installed and tested for successful imports. Additional dependencies will be evaluated when their subsystems are developed.
+The initial data analysis, visualization, dashboard, forecasting, and configuration dependencies have been installed and tested for successful imports. Additional dependencies will be evaluated when the AI advisor and deployment work begin.
 
 ### Initial Setup
 
@@ -224,9 +272,10 @@ Completed:
 - SQLite persistence and Python analysis service layer.
 - Streamlit dashboard pages and reusable UI component classes.
 - Dashboard OOP class diagram.
+- Energy domain model class diagram.
 
 Next planned steps include automated tests, team UML consolidation, and the team presentation.
 
 ## Academic Use
 
-This project is intended for educational and demonstration purposes. Forecasts and AI-generated recommendations should be evaluated against the available data and should not be treated as guaranteed energy savings.
+This project is intended for educational and demonstration purposes. Forecasts and AI-generated recommendations should be evaluated against the available data and should not be treated as guaranteed real-world advice.
