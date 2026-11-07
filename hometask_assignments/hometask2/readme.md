@@ -2,19 +2,13 @@
 
 Event-driven stream processing for the Smart Energy Management System.
 
-## Team overview
+Team details are in the [main README](../../README.md).
 
-| Member | Matriculation number | Assigned subsystem |
-|---|---|---|
-| Shreya Patil | 7226047 | Energy Dashboard & Reporting |
-| Ourvish Lofur | 7226994 | Data Management & Energy Analytics |
-| Joywin Bennis | 7225872 | AI Analyzer & Integration |
-
-## Joywin's individual solution
+## Implementation
 
 `subsystem3_ai_stream/` is self-contained. It has its own abstract processor, specialized filter and transformer, pipeline composition, iterator, and event generator. It does not import or require `subsystem2_stream/`.
 
-| Requirement | Joywin's implementation |
+| Requirement | Implementation |
 |---|---|
 | Abstract base class | `StreamProcessor(ABC)` declares `process()` with `@abstractmethod` |
 | Inheritance and polymorphism | `PowerFilter`, `CarbonTransformer`, and `Pipeline` implement the same `process(reading)` interface |
@@ -86,8 +80,8 @@ The interval duration is fixed for this example. The emission factor is a demons
 ```text
 hometask_assignments/hometask2/
 |-- readme.md
-|-- subsystem2_stream/       # Ourvish's separate implementation
-`-- subsystem3_ai_stream/    # Joywin's individual solution
+|-- subsystem2_stream/       # Data stream implementation
+`-- subsystem3_ai_stream/    # Independent energy pipeline
     |-- __init__.py
     |-- processors.py       # ABC, pipeline, filter, transformer
     |-- stream.py           # Reading object, iterator, generator
@@ -95,7 +89,7 @@ hometask_assignments/hometask2/
     `-- readme.md
 ```
 
-Ourvish's separate demo can be run using its original command:
+The subsystem 2 demo can be run with:
 
 ```bash
 python hometask_assignments/hometask2/subsystem2_stream/main.py
