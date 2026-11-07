@@ -29,21 +29,80 @@ The initial scope includes:
 
 Physical meter integration, live IoT monitoring, and production deployment are outside the initial scope.
 
-## Project Team
+## Team Overview
 
-- Shreya Patil
-- Joywin Bennis
-- Ourvish Lofur
+| Member | Matriculation number | Assigned subsystem |
+|---|---:|---|
+| Shreya Patil | 7226047 | 1 · Energy Dashboard & Reporting |
+| Ourvish Lofur | 7226994 | 2 · Data Management & Energy Analytics |
+| Joywin Bennis | 7225872 | 3 · AI Analyzer & Integration |
+
+### Dashboard OOP implementation
+
+The dashboard subsystem uses three UI classes in `src/ui/dashboard/components.py`:
+
+| Class | Responsibility |
+|---|---|
+| `DashboardHeader` | Stores and renders a page title and subtitle. |
+| `MetricCard` | Validates and renders a styled dashboard metric. |
+| `PropertyCard` | Validates and renders a building card with a details action. |
+
+Each class initializes state in `__init__`, exposes validated properties as getters/setters, and provides an `initialize()` method to render its UI. The Overview and Buildings pages use these classes.
+
+## System Design
+
+This GitHub-rendered UML class diagram describes the implemented dashboard components used by the Overview and Buildings pages:
+
+```mermaid
+classDiagram
+    class DashboardHeader {
+        -title: str
+        -subtitle: str
+        +DashboardHeader(title, subtitle)
+        +title: str
+        +subtitle: str
+        +initialize()
+    }
+    class MetricCard {
+        -label: str
+        -value: object
+        -key: str
+        -icon: str
+        -delta: str
+        +MetricCard(label, value, key, icon, delta)
+        +label: str
+        +value: object
+        +key: str
+        +icon: str
+        +delta: str
+        +initialize()
+    }
+    class PropertyCard {
+        -building: dict
+        +PropertyCard(building)
+        +building: dict
+        +initialize() bool
+    }
+    note for DashboardHeader "Used by Overview.py and Buildings.py"
+    note for MetricCard "Used on Overview and Buildings"
+    note for PropertyCard "Used on Buildings"
+```
+
+The approved capstone UML diagrams for the complete system can be added here when available; this diagram documents the implemented dashboard classes only.
+
+## Team Video Presentation
+
+**Presentation link:** Pending team recording and upload. Add the direct YouTube, Loom, or Google Drive URL here when available.
 
 ## System Subsystems
 
 ### 1. Energy Dashboard & Reporting
-**Planned technologies:** Streamlit, Plotly
+**Implemented technologies:** Streamlit, Plotly
 
 Responsible for presenting energy trends, analytical results, forecasts, and reporting visualizations.
 
 ### 2. Data Management & Energy Analytics
-**Planned technologies:** Python, Pandas, PostgreSQL, Scikit-learn, Statsmodels
+**Implemented technologies:** Python, Pandas, SQLite
 
 Responsible for data preparation, validation, exploratory analysis, and supporting forecasting experiments.
 
@@ -52,7 +111,7 @@ Responsible for data preparation, validation, exploratory analysis, and supporti
 
 Responsible for AI-assisted interpretation of energy insights and potential energy-saving recommendations.
 
-These are planned subsystem technologies; integration and compatibility will be verified as development progresses.
+AI Advisor technologies remain planned; integration and compatibility will be verified as development progresses.
 
 ## Dataset
 
@@ -72,7 +131,7 @@ The selected dataset and its columns will be reviewed before analysis begins. Na
 | Statistical forecasting | Statsmodels |
 | Configuration | python-dotenv |
 | Planned AI integration | LangChain, OpenAI API |
-| Planned database | PostgreSQL |
+| Current database | SQLite |
 | Planned containerization | Docker |
 
 ## Repository Structure
@@ -82,17 +141,20 @@ The selected dataset and its columns will be reviewed before analysis begins. Na
 Capstone_project/
 |-- .streamlit/
 |   `-- config.toml
+|-- src/backend/
+|   |-- analysis/
+|   |-- db/
+|   |-- ingestion/
+|   |-- models.py
+|   `-- settings.py
 |-- src/
 |   |-- app.py
-|   |-- data/
-|   |   |-- __init__.py
-|   |   `-- loader.py
-|   `-- ui/
-|       |-- __init__.py
-|       `-- dashboard/
-|           |-- __init__.py
-|           |-- *.py
-|           `-- static/
+|   |-- styles/style.css
+|   `-- ui/dashboard/
+|       |-- components.py
+|       |-- Overview.py
+|       |-- Buildings.py
+|       `-- *.py
 |-- .env.example
 |-- .gitignore
 |-- pyproject.toml
@@ -141,7 +203,7 @@ Add your own API credentials to `.env` only when needed. Never commit `.env` or 
 
 ## Visual Theme
 
-The planned dashboard theme is **Midnight Blue + Sand + Bronze**.
+The dashboard theme is **Midnight Blue + Sand + Bronze**.
 
 | Color | Hex |
 |---|---|
@@ -151,20 +213,19 @@ The planned dashboard theme is **Midnight Blue + Sand + Bronze**.
 | Bronze | `#C09262` |
 | Espresso Brown | `#49372B` |
 
-The theme is documented here for consistency; dashboard UI implementation will follow once the project is ready for that stage.
+The theme is applied across the Streamlit dashboard.
 
 ## Project Status
 
-**Current phase:** Repository setup and environment validation.
+**Current phase:** Streamlit dashboard and SQLite-backed energy analysis prototype.
 
 Completed:
-- Initial repository structure.
-- Python package initialization files.
-- Git ignore rules and environment template.
-- Initial dependency installation and import checks.
-- Local interpreter configuration in PyCharm.
+- OPSD data ingestion and validation.
+- SQLite persistence and Python analysis service layer.
+- Streamlit dashboard pages and reusable UI component classes.
+- Dashboard OOP class diagram.
 
-Next planned steps include project metadata, dataset assessment, data processing design, and subsystem development.
+Next planned steps include automated tests, team UML consolidation, and the team presentation.
 
 ## Academic Use
 

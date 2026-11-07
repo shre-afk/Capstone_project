@@ -1,5 +1,4 @@
 from pathlib import Path
-from backend.analysis import api
 
 import streamlit as st
 
@@ -29,13 +28,9 @@ if logo_file.exists():
     st.logo(str(logo_file), size="large")
 
 
-def overview_page():
-    st.title("Overview")
-    st.write("Monitor and analyze electricity consumption across German properties.")
-
 pages = st.navigation(
     [
-        st.Page(overview_page, title="Overview", icon=":material/overview:"),
+        st.Page(dashboard_dir / "Overview.py", title="Overview", icon=":material/overview:"),
         st.Page(dashboard_dir / "Buildings.py", title="Buildings", icon=":material/apartment:"),
         st.Page(
             dashboard_dir / "EnergyAnalytics.py",

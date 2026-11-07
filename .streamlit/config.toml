@@ -5,7 +5,7 @@
 primaryColor = "#C09262"          # Warm Bronze for buttons, sliders, active items
 backgroundColor = "#F3EADF"       # Sand background
 secondaryBackgroundColor = "#E9E0D4" # Light sand for cards and secondary surfaces
-textColor = "1A214F"             # Dark Charcoal for body text
+textColor = "#1A214F"            # Dark Charcoal for body text
 font = "sans serif"
 
 [theme.sidebar]
