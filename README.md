@@ -12,6 +12,15 @@ The prototype uses historical electricity data and analytical methods. It does n
 
 The independent implementations are in `hometask_assignments/hometask4/`. See the [assignment README](hometask_assignments/hometask4/readme.md) for both subsystem handlers and test suites.
 
+Subsystem 2's data service has its own error family: `DataSubsystemError` is the parent, and `ValidationError` (400), `NotFoundError` (404), `DuplicateReadingError` (409) and `DatabaseUnavailableError` (503) each carry their HTTP status. `DataErrorHandler` registers one Flask handler for the parent and turns every child into a JSON answer. Input is validated before it reaches MySQL, including physically impossible kWh values per building type. Install the [data service dependencies](hometask_assignments/hometask4/subsystem2_flask/requirements.txt), then run:
+
+```bash
+cd hometask_assignments/hometask4/subsystem2_flask
+python -m pytest -v
+```
+
+The data service has **15 passing tests** (error classes, validation rules and the full API through Flask's test client) on an in-memory repository, so they don't need MySQL. See [error classes, tests and setup](hometask_assignments/hometask4/subsystem2_flask/readme.md).
+
 Subsystem 3's advisor uses `AdvisorErrorHandler` to convert missing summaries, invalid metrics, database failures, and unexpected errors into appropriate HTTP/JSON responses. Its repository preserves database exception causes and closes connections after queries. The app validates analytical values before producing advice.
 
 Install the [advisor dependencies](hometask_assignments/hometask4/subsystem3_advisor/requirements.txt), then run from the repository root:
@@ -63,6 +72,57 @@ classDiagram
 ```
 
 `create_app()` registers the handler and connects routes to `EnergyRepository`. A missing summary raises `SummaryNotFoundError`; `build_advice()` raises `InvalidSummaryError` for invalid metrics. The handler returns JSON with the appropriate HTTP status.
+
+### Data service UML class diagram
+
+```mermaid
+classDiagram
+    direction TB
+    Exception <|-- DataSubsystemError
+    DataSubsystemError <|-- ValidationError
+    DataSubsystemError <|-- NotFoundError
+    DataSubsystemError <|-- DuplicateReadingError
+    DataSubsystemError <|-- DatabaseUnavailableError
+
+    class DataSubsystemError {
+        +int status_code = 500
+        +str message
+        +dict details
+        +to_dict()
+    }
+    class ValidationError {
+        +int status_code = 400
+    }
+    class NotFoundError {
+        +int status_code = 404
+    }
+    class DuplicateReadingError {
+        +int status_code = 409
+    }
+    class DatabaseUnavailableError {
+        +int status_code = 503
+    }
+    class DataErrorHandler {
+        +init_app(app)
+        +handle_data_error(error)
+        +handle_unknown_url(error)
+    }
+    class MySQLRepository {
+        -_query(sql, params)
+        +add_reading(meter_id, ts_utc, value)
+    }
+    class validators {
+        <<module>>
+        +parse_reading(data)
+        +check_plausible(value, building_type)
+        +parse_period(start, end)
+    }
+
+    MySQLRepository ..> DatabaseUnavailableError : raises when MySQL is down
+    MySQLRepository ..> DuplicateReadingError : raises on duplicate key
+    validators ..> ValidationError : raises on bad input
+    DataErrorHandler ..> DataSubsystemError : handles all subclasses
+```
 
 ## Project Objectives
 
