@@ -174,4 +174,7 @@ hometask_assignments/hometask2/
 
 ## Video
 
-Five-minute presentation: **link pending recording**.
+Five-minute presentation:
+
+**Video:** [Hometask 2 presentation (Google Drive)](https://drive.google.com/file/d/1wbvWZXmCwvsP2SSD4gAbRbj2i9uNSqo2/view?usp=drive_link)  
+All team videos: [Google Drive folder](https://drive.google.com/drive/folders/1eVMkck2AjgFbLdQfN-eUD_lYISwNbn4x?usp=drive_link)
