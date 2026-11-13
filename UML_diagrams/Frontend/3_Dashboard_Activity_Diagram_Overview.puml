@@ -1,0 +1,31 @@
+@startuml 3_Dashboard_Activity_Diagram_Overview
+title Overview page control flow (src/ui/dashboard/Overview.py)
+skinparam monochrome true
+skinparam shadowing false
+
+start
+:Load buildings;
+if ( ) then ([failed or empty])
+  :Show error or info;
+  kill
+else ([ok])
+endif
+:Render header, period selector;
+:Validate buildings, read latest;
+if ( ) then ([no readings])
+  :Show info\n+ Total buildings card;
+  kill
+else ([readings found])
+endif
+:Compute reporting period window;
+:For each building:\nget KPIs, timeseries, savings;
+note right
+  Calls run via _dashboard_call.
+  On failure: st.warning, and the
+  building's result is skipped.
+end note
+:Render metric cards;
+:Render analysis row\ntrend chart + anomaly flags, insights;
+:Render attribution footer;
+stop
+@enduml
