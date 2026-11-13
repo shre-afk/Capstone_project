@@ -23,14 +23,20 @@ A walkthrough covering the problem, the product, how it works, and the roadmap.
 - [What it does](#what-it-does)
 - [How it works](#how-it-works)
 - [Data](#data)
-- [Getting started - How to run the program](#getting-started)
+
+
+- [How to run the program](#How-to-run-the-program)
 - [Configuration](#configuration)
 - [Project structure](#project-structure)
+- [Design](#design)
+
+
 - [Backend API](#backend-api)
 - [AI Advisor](#ai-advisor)
 - [Testing](#testing)
-- [Design](#design)
-- [Roadmap](#roadmap)
+
+
+- [Roadmap - Future development](#roadmap)
 - [Data licence and academic use](#data-licence-and-academic-use)
 
 ---
@@ -43,7 +49,7 @@ A walkthrough covering the problem, the product, how it works, and the roadmap.
 | Ourvish Lofur | 7226994 | 2 · Data Management & Energy Analytics |
 | Joywin Bennis | 7225872 | 3 · AI Energy Advisor & Integration |
 
-Made @ Fachhochschule Dortmund as part of the Compact Programming Course by Professor G.Tabunshchyk
+**Made @ Fachhochschule Dortmund as part of the Compact Programming Course by Professor G.Tabunshchyk**
 
 ---
 
@@ -118,12 +124,12 @@ These figures are illustrative, not a billing calculation.
 
 ---
 
-## Getting started
+## How to run the program
 
 ### Prerequisites
 
-- Python **3.14**
-- About 60 MB of disk space for the OPSD file
+- Python **3.12 or newer** (developed on 3.14), or Docker
+- About 60 MB of disk space if you want to rebuild the database from the OPSD file
 - A KI Connect account and API key, needed for the AI Advisor page only
 
 ### 1. Clone and install
@@ -152,16 +158,16 @@ python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
 
-### 2. Download the data
+### 2. Download the data (only to rebuild the database)
 
-Download the OPSD file (60 MB, not stored in Git) into `data/raw/`:
+The repository ships a seeded `energy.db`, so the dashboard runs without this step. To rebuild the database from scratch, download the OPSD file (60 MB, not stored in Git) into `data/raw/`:
 
 ```text
 https://data.open-power-system-data.org/household_data/2020-04-15/household_data_15min_singleindex.csv
 → data/raw/household_data_15min_singleindex.csv
 ```
 
-### 3. Build the database
+### 3. Build the database (optional)
 
 ```bash
 python -m backend.ingestion.opsd
@@ -190,6 +196,16 @@ KICONNECT_MODEL=GPT-OSS-120B
 ```bash
 python -m streamlit run src/app.py
 ```
+
+### Run with Docker
+
+The repository includes a `Dockerfile` and `docker-compose.yml`. Create `.env` first, because Compose reads it (step 4), then run:
+
+```bash
+docker compose up --build
+```
+
+Open http://localhost:8502. The container uses the seeded database in `data/energy.db`, mounted from the host so the data persists.
 
 ### 6. Simulate live data (optional)
 
@@ -223,7 +239,12 @@ Capstone_project/
 ├── .streamlit/config.toml        # dashboard theme
 ├── config.toml                   # every tunable value and the building list
 ├── .env.example                  # template for AI Advisor credentials
+├── Dockerfile, docker-compose.yml, .dockerignore   # container setup
+├── energy.db                     # seeded SQLite database (local runs)
+├── data/energy.db                # seeded SQLite database (Docker volume)
 ├── data/raw/                     # OPSD CSV (downloaded, not in Git)
+├── UML_diagrams/Backend/         # backend UML and design diagrams
+├── docs/diagrams/                # system architecture diagram
 ├── src/
 │   ├── app.py                    # Streamlit entry point and page navigation
 │   ├── styles/style.css
@@ -243,70 +264,6 @@ Capstone_project/
 └── requirements.txt
 ```
 
----
-
-## Backend API
-
-The dashboard and the advisor use the backend only through `backend.analysis.api`:
-
-| Function | Returns |
-|---|---|
-| `list_buildings()` | id, name, type, floor area for every building |
-| `get_latest(building_id)` | latest reading time, estimated power (kW), power per zone |
-| `get_kpis(building_id, start, end)` | energy kWh, cost €, CO₂ kg, EUI kWh/m²/yr, period days, completeness |
-| `get_timeseries(building_id, start, end, freq="1h")` | kWh per zone at the chosen resolution |
-| `get_savings(building_id, start, end)` | change against the previous period of the same length (kWh, €, CO₂, %) |
-| `get_score(building_id, start, end)` | sustainability score 0–100, grade A–E, intensity and after-hours points |
-| `get_peak_usage(building_id, start, end, top_n=5)` | highest complete hours and days, highest average clock hours, coverage |
-| `get_forecast(building_id, days=7)` | hourly forecast (average of the same weekday-hour over the last 4 weeks) |
-
-Dates without a time zone are Berlin time; `end` is excluded; invalid input raises `ValueError`. More detail is in [`src/backend/README.md`](src/backend/README.md).
-
----
-
-## AI Advisor
-
-- **Model:** any tool-calling model on KI Connect, the NRW universities' OpenAI-compatible AI gateway, via `langchain-openai`.
-- **Tools:**
-  - `list_buildings`
-  - `get_consumption`
-  - `compare_buildings`
-  - `get_peak_usage`
-
-  All of them call the backend API, so answers use the same numbers as the dashboard.
-- **Memory:** each browser session has its own conversation thread, and **New conversation** starts again.
-- **Guardrails** (from the system prompt):
-  - it answers building-energy questions only;
-  - it uses tools for building-specific figures;
-  - it names the building, period, units and assumptions;
-  - it keeps observed findings, possible explanations and suggested actions separate;
-  - it doesn't invent results for features that aren't connected, such as forecasting in chat or anomaly detection.
-
----
-
-## Testing
-
-```bash
-python -m pytest -v
-```
-
-**51 tests**, all passing:
-
-| Area | File(s) | Tests |
-|---|---|---|
-| Domain model | `tests/backend/test_models.py` | 5 |
-| Database | `tests/backend/test_database.py` | 4 |
-| Ingestion | `tests/backend/test_ingestion.py` | 3 |
-| Formulas | `tests/backend/test_calc.py` | 8 |
-| Service API | `tests/backend/test_api.py` | 6 |
-| Unusual-use indicator | `tests/test_dashboard_anomalies.py` | 6 |
-| Dashboard error handling and components | `tests/test_dashboard_errors.py` | 19 |
-
-The backend tests use a temporary database and a small hand-calculated fake office, so they never touch `energy.db` or the OPSD file. For coverage:
-
-```bash
-python -m pytest --cov=backend --cov-report=term-missing
-```
 
 ---
 
@@ -316,9 +273,6 @@ All design diagrams are in the repository:
 - [`UML_diagrams`](UML_diagrams/): the whole-system architecture
 - [`UML_diagrams/Backend/`](UML_diagrams/Backend/): the Data Management & Energy Analytics subsystem (12 diagrams)
 
-### System architecture
-
-![System architecture](UML_diagrams/Whole-system Architecture.png)
 
 ### Backend diagrams
 
@@ -340,16 +294,85 @@ All design diagrams are in the repository:
 
 ---
 
+## Backend API
+
+The dashboard and the advisor use the backend only through `backend.analysis.api`:
+
+| Function | Returns |
+|---|---|
+| `list_buildings()` | id, name, type, floor area for every building |
+| `get_latest(building_id)` | latest reading time, estimated power (kW), power per zone |
+| `get_kpis(building_id, start, end)` | energy kWh, cost €, CO₂ kg, EUI kWh/m²/yr, period days, completeness |
+| `get_timeseries(building_id, start, end, freq="1h")` | kWh per zone at the chosen resolution |
+| `get_savings(building_id, start, end)` | change against the previous period of the same length (kWh, €, CO₂, %) |
+| `get_score(building_id, start, end)` | sustainability score 0–100, grade A–E, intensity and after-hours points |
+| `get_data_availability(building_id)` | first and latest stored interval, months with readings, monthly coverage |
+| `get_peak_usage(building_id, start, end, top_n=5)` | highest complete hours and days, highest average clock hours, coverage |
+| `get_forecast(building_id, days=7)` | hourly forecast (average of the same weekday-hour over the last 4 weeks) |
+
+Dates without a time zone are Berlin time; `end` is excluded; invalid input raises `ValueError`. More detail is in [`src/backend/README.md`](src/backend/README.md).
+
+---
+
+## AI Advisor
+
+- **Model:** any tool-calling model on KI Connect, the NRW universities' OpenAI-compatible AI gateway, via `langchain-openai`.
+- **Tools:**
+  - `list_buildings`
+  - `get_data_availability`
+  - `get_consumption`
+  - `compare_buildings`
+  - `get_peak_usage`
+
+  All of them call the backend API, so answers use the same numbers as the dashboard.
+- **Memory:** each browser session has its own conversation thread, and **New conversation** starts again.
+- **Guardrails** (from the system prompt):
+  - it answers building-energy questions only;
+  - it uses tools for building-specific figures;
+  - it names the building, period, units and assumptions;
+  - it keeps observed findings, possible explanations and suggested actions separate;
+  - it doesn't invent results for features that aren't connected, such as forecasting in chat or anomaly detection.
+
+---
+
+## Testing
+
+```bash
+python -m pytest -v
+```
+
+**72 tests**, all passing:
+
+| Area | File(s) | Tests |
+|---|---|---|
+| Domain model | `tests/backend/test_models.py` | 5 |
+| Database | `tests/backend/test_database.py` | 4 |
+| Ingestion | `tests/backend/test_ingestion.py` | 3 |
+| Formulas | `tests/backend/test_calc.py` | 8 |
+| Service API | `tests/backend/test_api.py` | 6 |
+| Data availability | `tests/backend/test_availability.py` | 8 |
+| Unusual-use indicator | `tests/test_dashboard_anomalies.py` | 6 |
+| Dashboard error handling and components | `tests/test_dashboard_errors.py` | 19 |
+| AI Advisor page | `tests/test_advisor_ui.py` | 13 |
+
+The backend tests use a temporary database and a small hand-calculated fake office, so they never touch `energy.db` or the OPSD file. For coverage:
+
+```bash
+python -m pytest --cov=backend --cov-report=term-missing
+```
+
+
+---
+
 ## Roadmap
 
-1. **Now:** the complete platform: dashboard, analytics, forecast and AI advisor.
-2. **Next:**
+1. **Now:** the complete platform: dashboard, analytics, forecast, AI advisor and Docker deployment.
+2. **Stage 2:**
    - seasonal anomaly alerts (unusual use for the season, day type and hour);
    - weather-corrected savings;
-   - the sustainability score shown in the dashboard;
-   - Docker deployment.
-3. **Then:** live smart-meter connections, heat and gas meters, and several zones per building.
-4. **Later:** pilots with property managers, whole-portfolio views and CO₂/ESG reporting.
+   - the sustainability score shown in the dashboard.
+3. **Stage 3:** live smart-meter connections, heat and gas meters, and several zones per building.
+4. **Stage 4:** pilots with property managers, whole-portfolio views and CO₂/ESG reporting.
 
 ---
 
