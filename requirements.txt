@@ -17,3 +17,9 @@ python-dotenv
 # Python Test
 pytest
 pytest-cov
+
+langchain==1.5.0
+langchain-openai==1.7.4
+langgraph==1.2.21
+pydantic==2.14.3
+openai==3.50.0
