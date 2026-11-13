@@ -49,10 +49,12 @@
 }
 
 [data-testid="stSidebar"] img[alt="Logo"] {
+    display: block;
     width: 100% !important;
     max-width: 250px !important;
     max-height: 108px !important;
     height: auto !important;
+    margin-inline: auto;
     object-fit: contain !important;
     object-position: center center !important;
 }

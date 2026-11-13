@@ -123,15 +123,53 @@ st.subheader("Property details")
 with st.container(border=True, key="building_detail"):
     st.markdown(f"### {selected_building['name']}")
     st.caption("Building information and the latest available meter data.")
-    detail_cols = st.columns(3, gap="medium")
+    latest = api.get_latest(selected_building["id"])
+    sustainability_score: dict[str, float | str] | None = None
+    score_unavailable = False
+    if isinstance(latest, dict) and latest.get("last_reading") is not None:
+        latest_timestamp = pd.to_datetime(
+            latest["last_reading"], utc=True, errors="coerce"
+        )
+        if pd.isna(latest_timestamp):
+            st.warning("The latest reading timestamp is invalid; score unavailable.")
+        else:
+            score_end = latest_timestamp + pd.Timedelta(minutes=15)
+            score_start = score_end - pd.Timedelta(days=30)
+            try:
+                sustainability_score = api.get_score(
+                    selected_building["id"],
+                    score_start,
+                    score_end,
+                )
+            except ValueError:
+                score_unavailable = True
+
+    detail_cols = st.columns(4, gap="medium")
     detail_cols[0].metric(
         "Category",
         TYPE_LABELS.get(selected_building["type"], selected_building["type"].title()),
     )
     detail_cols[1].metric("Floor area", f"{selected_building['floor_area_m2']:,.0f} m²")
-    detail_cols[2].metric("Building ID", selected_building["id"])
+    if sustainability_score is not None:
+        score_value = float(sustainability_score["score"])
+        if not math.isfinite(score_value):
+            raise ValueError("Sustainability score must be a finite number.")
+        detail_cols[2].metric(
+            "Sustainability score · 30 days",
+            f"{score_value:.1f} / 100",
+            delta=f"Grade {sustainability_score['grade']}",
+            delta_color="off",
+        )
+    else:
+        detail_cols[2].metric("Sustainability score · 30 days", "Unavailable")
+    detail_cols[3].metric("Building ID", selected_building["id"])
+    st.caption(
+        "Score combines energy intensity and after-hours use; configured benchmarks "
+        "are assumptions, not official ratings."
+    )
+    if score_unavailable:
+        st.caption("A score could not be calculated from readings in this period.")
 
-    latest = api.get_latest(selected_building["id"])
     st.markdown("#### Latest electricity reading")
     if not isinstance(latest, dict):
         st.warning("Latest meter data is unavailable for this building.")

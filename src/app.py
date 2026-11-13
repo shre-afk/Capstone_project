@@ -23,7 +23,7 @@ else:
     st.warning(f"CSS file not found: {css_file}")
 
 dashboard_dir = Path(__file__).parent / "ui" / "dashboard"
-logo_file = dashboard_dir / "static" / "Capstone_Logo1.png"
+logo_file = dashboard_dir / "static" / "wattlens-logo-stacked-dark.png"
 
 if logo_file.exists():
     st.logo(str(logo_file), size="medium")
