@@ -21,11 +21,14 @@ Owner: Ourvish Lofur (7226994)
 | `get_latest(building_id)` | dict: last_reading, power_kw, zones |
 | `get_kpis(building_id, start, end)` | dict: energy_kwh, cost_eur, co2_kg, eui_kwh_m2_yr, period_days, completeness |
 | `get_timeseries(building_id, start, end, freq="1h")` | DataFrame, one column per zone, kWh |
+| `get_peak_usage(building_id, start, end, top_n=5)` | dict: highest complete hours/days, highest average clock hours, coverage and excluded bucket counts |
 | `get_savings(building_id, start, end)` | dict: energy_kwh, previous_kwh, saved_kwh, saved_eur, saved_co2_kg, change_pct |
 | `get_score(building_id, start, end)` | dict: score (0-100), grade (A-E), intensity_points, after_hours_points, ... |
 | `get_forecast(building_id, days=7)` | DataFrame, forecast_kwh per hour |
  
 Dates without a time zone mean Berlin time; `end` is excluded. Bad input raises `ValueError`.
+
+Peak analysis accepts quarter-hour-aligned boundaries and returns `status="no_data"` for periods with no readings. Peak lists contain at most 10 entries per category and exclude incomplete hours/calendar days. Berlin DST days are handled as 23 or 25 hours. Results describe observed usage, not instantaneous maximum demand or detected anomalies.
  
 ## Files
  

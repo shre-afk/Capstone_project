@@ -18,6 +18,11 @@ dependencies = [
     "scikit-learn",
     "statsmodels",
     "python-dotenv",
+    "langchain==1.5.0",
+    "langchain-openai==1.7.4",
+    "langgraph==1.2.21",
+    "pydantic==2.14.3",
+    "openai==3.50.0",
 ]
 
 [tool.setuptools]
@@ -25,7 +30,6 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
 
 [tool.pytest.ini_options]
 # Only the main Capstone project tests no Hometask files
