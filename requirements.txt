@@ -5,7 +5,6 @@ numpy
 # Visualization and dashboard
 plotly
 streamlit
-reportlab
 
 # Forecasting and machine learning
 scikit-learn

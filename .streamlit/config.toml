@@ -1,16 +1,6 @@
-# Streamlit application configuration
-# Controls frontend theme and appearance.
-
 [theme]
 primaryColor = "#C09262"          # Warm Bronze for buttons, sliders, active items
 backgroundColor = "#F3EADF"       # Sand background
-secondaryBackgroundColor = "#E9E0D4" # Light sand for cards and secondary surfaces
-textColor = "#1A214F"            # Dark Charcoal for body text
-font = "sans serif"
-
-[theme.sidebar]
-primaryColor = "#C09262"
-backgroundColor = "#1E3045"
-secondaryBackgroundColor = "#1E3045"
-textColor = "#F3EADF"
+secondaryBackgroundColor = "#1E3045" # Midnight Blue for sidebar & card headers
+textColor = "#252525"             # Dark Charcoal for body text
 font = "sans serif"
