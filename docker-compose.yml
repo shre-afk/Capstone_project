@@ -1,0 +1,13 @@
+services:
+  wattlens-app:
+    build: .
+    container_name: wattlens_dashboard
+    ports:
+      - "8502:8501"
+    environment:
+      - DB_PATH=/app/data/energy.db
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
