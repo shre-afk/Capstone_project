@@ -11,7 +11,7 @@ It turns raw meter readings from real German buildings into a Streamlit dashboar
 
 <!-- Replace the link below with the published video URL -->
 
-**[▶ Watch the WattLens showcase video](https://LINK-TO-VIDEO)**
+**[▶ Watch the WattLens showcase video](https://drive.google.com/file/d/1vc62Jwb-Pq7q6N37rPdjqaavSLd11UnV/view?usp=sharing)**
 
 A walkthrough covering the problem, the product, how it works, and the roadmap.
 
