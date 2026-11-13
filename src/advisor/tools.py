@@ -30,6 +30,19 @@ def list_buildings() -> list[dict]:
 
 
 @tool
+def get_data_availability(building_id: int) -> dict:
+    """List the stored electricity months and date bounds for a building.
+
+    No date range is required. Use an ID from list_buildings, or reuse the
+    building in the conversation. Use this for "what data is available for this
+    building?" as well as questions about available dates or months.
+    Returns monthly interval coverage so months
+    with any readings can be distinguished from fully covered calendar months.
+    """
+    return api.get_data_availability(building_id)
+
+
+@tool
 def get_consumption(
     building_id: int,
     start: str,
