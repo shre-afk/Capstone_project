@@ -135,10 +135,10 @@ metric_cols[1].metric("Buildings with readings", len(buildings_with_readings))
 metric_cols[2].metric("Highest consumer", top_building)
 
 st.divider()
-chart_col, type_col = st.columns([1.3, 1], gap="medium")
+chart_col, type_col = st.columns([1, 1.2], gap="medium")
 
 max_consumption = float(building_data["Consumption (kWh)"].max())
-chart_height = max(420, 48 * len(building_data) + 130)
+chart_height = min(380, max(300, 34 * len(building_data) + 100))
 
 building_chart = go.Figure(
     go.Bar(

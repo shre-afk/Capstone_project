@@ -28,6 +28,8 @@ def _dashboard_call(
     fatal: bool = False,
     **kwargs,
 ) -> Result | None:
+    # Keep the page running for optional data, but stop when its building list
+    # cannot be loaded at all.
     try:
         return DashboardErrorHandler.execute(operation, callback, *args, **kwargs)
     except DashboardOperationError as error:
@@ -67,6 +69,7 @@ def _daily_energy_series(frame: object) -> pd.Series | None:
     energy_series = values.sum(axis=1, min_count=1).dropna()
     if energy_series.empty:
         return None
+    # Group by local day so readings around midnight land on the day users expect.
     energy_series.index = pd.to_datetime(energy_series.index, utc=True, errors="coerce")
     energy_series = energy_series[energy_series.index.notna()]
     if energy_series.empty:
@@ -142,9 +145,11 @@ if not readings_with_times:
     ).initialize()
     st.stop()
 
+# The API uses an exclusive end time; include the most recent 15-minute reading.
 period_end = max(readings_with_times) + pd.Timedelta(minutes=15)
 period_start = period_end - pd.Timedelta(days=period_days)
 
+# Keep each building's result separate so equal names don't overwrite its energy.
 energy_by_building = []
 timeseries_by_building = {}
 saved_co2_kg = 0.0
@@ -224,6 +229,7 @@ for building in buildings:
 
 total_energy_kwh = sum(energy for _, energy in energy_by_building)
 consumption_label = "Total consumption"
+# Make a partial total visible instead of implying every building contributed.
 if len(energy_by_building) < len(buildings):
     consumption_label = (
         f"Consumption ({len(energy_by_building)} of {len(buildings)} buildings)"
@@ -272,6 +278,7 @@ with st.container(key="overview_analysis_row"):
             st.subheader("Energy consumption trend")
             if timeseries_by_building:
                 trend = pd.concat(timeseries_by_building, axis=1).sum(axis=1, min_count=1)
+                # These are heuristic indicators, not proof of a fault or diagnosis.
                 anomaly_data = flag_daily_anomalies(trend)
                 chart_data = trend.rename("Consumption (kWh)").rename_axis("Date").reset_index()
                 chart = px.line(
@@ -310,7 +317,7 @@ with st.container(key="overview_analysis_row"):
                             ),
                         )
                     )
-                st.plotly_chart(chart, width="stretch", height=350)
+                st.plotly_chart(chart, width="stretch", height=250)
                 if flagged.empty:
                     st.caption(
                         "No unusual daily readings were flagged. Indicator only; "
