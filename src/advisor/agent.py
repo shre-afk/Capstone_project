@@ -7,13 +7,14 @@ from advisor.tools import (
     list_buildings,
     get_consumption,
     compare_buildings,
+    get_peak_usage,
 )
 
 
 def get_agent():
     return create_agent(
         model=get_model(),
-        tools=[list_buildings, get_consumption, compare_buildings],
+        tools=[list_buildings, get_consumption, compare_buildings, get_peak_usage],
         system_prompt=SYSTEM_PROMPT,
         checkpointer=InMemorySaver(),
     )
