@@ -98,6 +98,50 @@ def list_buildings():
     return buildings
 
 
+# Available historical electricity dates
+def get_data_availability(building_id):
+    """Stored electricity dates and monthly timestamp coverage in Berlin time."""
+    with closing(database.connect()) as con:
+        building = _building(con, building_id)
+        times = database.reading_timestamps(con, building_id).tz_convert(settings.LOCAL_TZ)
+
+    months = []
+    for month, count in times.strftime("%Y-%m").value_counts(sort=False).items():
+        start = pd.Timestamp(f"{month}-01", tz=settings.LOCAL_TZ)
+        end = start + pd.DateOffset(months=1)
+        expected = int((end - start) / pd.Timedelta(minutes=15))
+        months.append({
+            "month": month,
+            "start": start.isoformat(),
+            "end_exclusive": end.isoformat(),
+            "stored_intervals": int(count),
+            "expected_intervals": expected,
+            "completeness": round(int(count) / expected, 4),
+            "full_month": int(count) == expected,
+        })
+
+    return {
+        "status": "ok" if len(times) else "no_data",
+        "building_id": building_id,
+        "building_name": building.name,
+        "measurement": "grid_import",
+        "timezone": settings.LOCAL_TZ,
+        "first_stored_interval_start": times[0].isoformat() if len(times) else None,
+        "latest_stored_interval_start": times[-1].isoformat() if len(times) else None,
+        "latest_stored_interval_end_exclusive": (
+            (times[-1] + pd.Timedelta(minutes=15)).isoformat() if len(times) else None
+        ),
+        "available_month_count": len(months),
+        "fully_covered_month_count": sum(month["full_month"] for month in months),
+        "months": months,
+        "notes": [
+            "Only months with stored electricity readings are listed; a listed month may be partial.",
+            "Coverage counts distinct timestamps with at least one electricity-meter reading; it does not verify every zone.",
+            "Stored readings may include reconstructed source intervals; coverage does not establish source quality.",
+        ],
+    }
+
+
 # What is happening right now (per zone)
 def get_latest(building_id):
     """-> Newest reading time, total_power (kW) & power per zone"""

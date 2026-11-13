@@ -231,4 +231,16 @@ def latest_ts(con, building_id = None):
 
     # return real time
     return pd.Timestamp(last_time_text)
- 
+
+
+def reading_timestamps(con, building_id, kind="electricity"):
+    """Distinct stored interval starts for one building and meter kind."""
+    rows = con.execute("""
+        SELECT DISTINCT r.ts_utc
+        FROM reading r
+        JOIN meter m ON m.id = r.meter_id
+        JOIN zone z ON z.id = m.zone_id
+        WHERE z.building_id = ? AND m.kind = ?
+        ORDER BY r.ts_utc
+    """, (building_id, kind)).fetchall()
+    return pd.DatetimeIndex(pd.to_datetime([row["ts_utc"] for row in rows], utc=True))

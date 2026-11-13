@@ -18,6 +18,7 @@ Owner: Ourvish Lofur (7226994)
 | Function | Returns |
 |---|---|
 | `list_buildings()` | list of dicts: id, name, type, floor_area_m2 |
+| `get_data_availability(building_id)` | dict: first/latest stored interval, months with readings and full-calendar-month timestamp coverage |
 | `get_latest(building_id)` | dict: last_reading, power_kw, zones |
 | `get_kpis(building_id, start, end)` | dict: energy_kwh, cost_eur, co2_kg, eui_kwh_m2_yr, period_days, completeness |
 | `get_timeseries(building_id, start, end, freq="1h")` | DataFrame, one column per zone, kWh |
@@ -27,6 +28,8 @@ Owner: Ourvish Lofur (7226994)
 | `get_forecast(building_id, days=7)` | DataFrame, forecast_kwh per hour |
  
 Dates without a time zone mean Berlin time; `end` is excluded. Bad input raises `ValueError`.
+
+Availability requires no date range. Months are grouped in Berlin time, with DST-aware expected quarter-hour counts. Listed months can be partial; coverage counts timestamps with at least one electricity reading, not completeness across every zone or source interpolation quality.
 
 Peak analysis accepts quarter-hour-aligned boundaries and returns `status="no_data"` for periods with no readings. Peak lists contain at most 10 entries per category and exclude incomplete hours/calendar days. Berlin DST days are handled as 23 or 25 hours. Results describe observed usage, not instantaneous maximum demand or detected anomalies.
  
