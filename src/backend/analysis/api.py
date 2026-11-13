@@ -183,6 +183,99 @@ def get_timeseries(building_id, start, end, freq="1h"):
     return per_bucket.round(3) 
 
 
+def _usage_intervals(building_id, start, end):
+    """Complete building totals on a regular 15-minute grid, preserving gaps."""
+    building, df, start, end = _readings(building_id, start, end)
+    if any(ts.minute % 15 or ts.second or ts.microsecond or ts.nanosecond
+           for ts in (start, end)):
+        raise ValueError("Usage analysis requires boundaries aligned to 15-minute intervals")
+
+    expected = pd.date_range(start, end, freq="15min", inclusive="left")
+    if df.empty:
+        energy = pd.Series(float("nan"), index=expected, dtype=float)
+    else:
+        zones = df.pivot_table(index="ts", columns="zone", values="value", aggfunc="sum")
+        zones = zones.reindex(expected)
+        # If an observed zone is missing, do not count its partial building total.
+        energy = zones.sum(axis=1, min_count=len(zones.columns))
+    return building, energy, start, end
+
+
+def _usage_metrics(energy):
+    """Observed energy and coverage, preserving missing readings."""
+    expected = len(energy)
+    observed = int(energy.count())
+    total = float(energy.sum()) if observed or expected == 0 else None
+    return {
+        "energy_kwh": round(total, 3) if total is not None else None,
+        "average_power_kw": round(total / (observed / 4), 3) if observed else None,
+        "expected_intervals": expected,
+        "observed_intervals": observed,
+        "completeness": round(observed / expected, 4) if expected else None,
+    }
+
+
+def get_peak_usage(building_id, start, end, top_n=5):
+    """Rank complete hourly/calendar-day import buckets in Berlin time."""
+    if not 1 <= top_n <= 10:
+        raise ValueError("top_n must be between 1 and 10")
+    building, energy, start, end = _usage_intervals(building_id, start, end)
+    coverage = _usage_metrics(energy)
+    if coverage["observed_intervals"] == 0:
+        return {"status": "no_data", "building_id": building_id,
+                "message": "No readings exist for this building in the requested period."}
+
+    # Four observed quarters are required for each full hour.
+    hourly = energy.resample("1h").sum(min_count=4)
+    daily = energy.resample("1D").sum(min_count=1)
+    day_counts = energy.notna().astype(int).resample("1D").sum()
+    # Calendar days have 92, 96 or 100 quarter-hours across Berlin DST changes.
+    expected_day_counts = pd.Series([
+        len(pd.date_range(day, day + pd.DateOffset(days=1), freq="15min", inclusive="left"))
+        for day in daily.index
+    ], index=daily.index)
+    daily = daily.where(day_counts == expected_day_counts)
+    complete_hours = hourly.dropna()
+    complete_days = daily.dropna()
+    profile = complete_hours.groupby(complete_hours.index.hour).agg(["mean", "count"])
+    profile = profile.sort_values("mean", ascending=False, kind="stable").head(top_n)
+
+    return {
+        "status": "ok" if not complete_hours.empty else "insufficient_data",
+        "building_id": building_id, "building_name": building.name,
+        "measurement": "grid_import",
+        "period": {"start": start.isoformat(), "end_exclusive": end.isoformat(),
+                   "timezone": settings.LOCAL_TZ},
+        "coverage": coverage,
+        "complete_hours": len(complete_hours), "excluded_hours": int(hourly.isna().sum()),
+        "complete_days": len(complete_days), "excluded_days": int(daily.isna().sum()),
+        "top_hours": [
+            {"start": ts.isoformat(), "end_exclusive": (ts + pd.Timedelta(hours=1)).isoformat(),
+             "energy_kwh": round(float(value), 3), "average_power_kw": round(float(value), 3)}
+            for ts, value in complete_hours.nlargest(top_n).items()
+        ],
+        "top_days": [
+            {"start": ts.isoformat(), "end_exclusive": (ts + pd.DateOffset(days=1)).isoformat(),
+             "energy_kwh": round(float(value), 3),
+             "duration_hours": (ts + pd.DateOffset(days=1) - ts) / pd.Timedelta(hours=1)}
+            for ts, value in complete_days.nlargest(top_n).items()
+        ],
+        "highest_average_clock_hours": [
+            {"hour_of_day": int(hour), "mean_hourly_kwh": round(float(row["mean"]), 3),
+             "complete_hours_used": int(row["count"])}
+            for hour, row in profile.iterrows()
+        ],
+        "notes": [
+            "Only complete hours and complete calendar days are ranked; boundary buckets may be excluded.",
+            "Peaks are the highest observed complete buckets, not guaranteed full-period peaks if data is missing.",
+            "Hourly power is an average over one hour, not instantaneous or 15-minute maximum demand.",
+            "Clock-hour means describe observed complete hours; DST days may be 23 or 25 hours long.",
+            "Coverage checks currently observed zones; source interpolation flags are unavailable.",
+            "High usage alone does not establish an anomaly or equipment fault.",
+        ],
+    }
+
+
 # How much did we save comparing this period v/s the period (same length) just before
 def get_savings(building_id, start, end):
     """-> energy_now vs energy_before (same period)"""
