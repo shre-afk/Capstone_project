@@ -121,8 +121,9 @@ class MetricCard:
 class PropertyCard:
     """Render a building summary and let users select it for details."""
 
-    def __init__(self, building):
+    def __init__(self, building, selected=False):
         self.building = building
+        self.selected = selected
 
     @property
     def building(self):
@@ -146,18 +147,92 @@ class PropertyCard:
         category = TYPE_LABELS.get(kind, kind.title())
         icon = TYPE_ICONS.get(kind, "▦")
         visual_kind = kind if kind in TYPE_LABELS else "public"
+        if kind == "home":
+            visual = (
+                "<svg class='property-home-illustration' viewBox='0 0 320 180' "
+                "role='img' aria-label='Illustration of a home' "
+                "xmlns='http://www.w3.org/2000/svg'>"
+                "<path d='M0 151c48-14 90-7 134 0s91 5 186-6v35H0z' "
+                "fill='#B8D0BE'/>"
+                "<circle cx='262' cy='38' r='19' fill='#F3D99B'/>"
+                "<path d='M96 151V83l64-49 64 49v68z' fill='#F8F5ED'/>"
+                "<path d='m82 87 78-60 78 60-10 13-68-52-68 52z' "
+                "fill='#527A67'/>"
+                "<path d='M145 105h31v46h-31z' fill='#C78D52'/>"
+                "<circle cx='168' cy='129' r='2.5' fill='#F8F5ED'/>"
+                "<path d='M111 99h23v25h-23zm78 0h23v25h-23z' "
+                "fill='#B9D5E2' stroke='#D6A968' stroke-width='4'/>"
+                "<path d='M122 99v25m-11-12h23m55-13v25m-11-12h23' "
+                "stroke='#F8F5ED' stroke-width='3'/>"
+                "<path d='M74 151c0-16 10-28 22-28s22 12 22 28m105 0"
+                "c0-17 11-30 24-30s24 13 24 30' fill='#6F9579'/>"
+                "<path d='M159 151v29m-12-14 12 8 12-8' fill='none' "
+                "stroke='#D6A968' stroke-width='5' stroke-linecap='round'/>"
+                "</svg>"
+            )
+        elif kind == "business":
+            visual = (
+                "<svg class='property-type-illustration' viewBox='0 0 320 180' "
+                "role='img' aria-label='Commercial office building' "
+                "xmlns='http://www.w3.org/2000/svg'>"
+                "<path d='M0 151h320v29H0z' fill='#C5D6E0'/>"
+                "<path d='M81 151V55l79-35 79 35v96z' fill='#F8F5ED'/>"
+                "<path d='M72 57 160 17l88 40-6 12-82-37-82 37z' fill='#52728A'/>"
+                "<path d='M104 69h23v21h-23zm45 0h23v21h-23zm45 0h23v21h-23z"
+                "M104 105h23v21h-23zm45 0h23v21h-23zm45 0h23v21h-23z' "
+                "fill='#B9D5E2' stroke='#D7E1E6' stroke-width='3'/>"
+                "<path d='M147 133h26v18h-26z' fill='#D6A968'/>"
+                "<path d='M40 151c0-18 12-31 26-31s26 13 26 31m166 0"
+                "c0-18 12-31 26-31s26 13 26 31' fill='#78947F'/>"
+                "</svg>"
+            )
+        elif kind == "public":
+            visual = (
+                "<svg class='property-type-illustration' viewBox='0 0 320 180' "
+                "role='img' aria-label='Public civic building' "
+                "xmlns='http://www.w3.org/2000/svg'>"
+                "<path d='M0 151h320v29H0z' fill='#E6D3B4'/>"
+                "<path d='m49 62 111-43 111 43z' fill='#9A744B'/>"
+                "<path d='M62 67h196v12H62z' fill='#C39A68'/>"
+                "<path d='M75 79h170v64H75z' fill='#F8F5ED'/>"
+                "<path d='M62 143h196v10H62z' fill='#9A744B'/>"
+                "<path d='M91 82h14v58H91zm37 0h14v58h-14zm44 0h14v58h-14z"
+                "m37 0h14v58h-14z' fill='#D6C2A3'/>"
+                "<path d='M149 112h22v31h-22z' fill='#C78D52'/>"
+                "<circle cx='160' cy='37' r='8' fill='#F3D99B'/>"
+                "<path d='M40 153h240v8H40z' fill='#78947F'/>"
+                "</svg>"
+            )
+        else:
+            visual = f"<span aria-hidden='true'>{icon}</span>"
 
-        with st.container(border=True, key=f"property_card_{building['id']}"):
+        card_key = (
+            f"property_card_selected_{building['id']}"
+            if self.selected
+            else f"property_card_{building['id']}"
+        )
+        with st.container(border=True, key=card_key):
             st.markdown(
                 f"<div class='property-visual property-visual-{visual_kind}'>"
-                f"<span>{icon}</span></div>",
+                f"{visual}</div>",
                 unsafe_allow_html=True,
             )
-            st.markdown(f"##### {category}")
-            st.markdown(f"### {building['name']}")
-            st.caption(f"{building['floor_area_m2']:,.0f} m²")
+            if self.selected:
+                st.markdown(
+                    "<div class='property-selected'>Selected building</div>",
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.markdown(
+                    "<div class='property-selected property-selected-placeholder' "
+                    "aria-hidden='true'>Selected building</div>",
+                    unsafe_allow_html=True,
+                )
+            st.markdown(f"#### {building['name']}")
+            st.caption(f"{category} · {building['floor_area_m2']:,.0f} m²")
             return st.button(
-                "View details →",
+                "View details",
                 key=f"view_building_{building['id']}",
+                help=f"View details for {building['name']}",
                 width="stretch",
             )

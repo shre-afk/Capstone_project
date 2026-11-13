@@ -1,3 +1,4 @@
+import base64
 from pathlib import Path
 
 import streamlit as st
@@ -22,11 +23,13 @@ else:
     st.warning(f"CSS file not found: {css_file}")
 
 dashboard_dir = Path(__file__).parent / "ui" / "dashboard"
-logo_file = dashboard_dir / "static" / "Capstone_Logo.png"
+logo_file = dashboard_dir / "static" / "Capstone_Logo1.png"
 
 if logo_file.exists():
-    st.logo(str(logo_file), size="large")
+    st.logo(str(logo_file), size="medium")
 
+skyline_file = dashboard_dir / "static" / "sidebar_skyline.svg"
+skyline_data = base64.b64encode(skyline_file.read_bytes()).decode("ascii")
 
 pages = st.navigation(
     [
@@ -52,12 +55,22 @@ pages = st.navigation(
             title="Reports",
             icon=":material/description:",
         ),
-        st.Page(
-            dashboard_dir / "Properties.py",
-            title="Properties",
-            icon=":material/business_center:",
-        ),
     ]
 )
+
+with st.sidebar:
+    st.markdown(
+        f"""
+        <div class="sidebar-brand-footer">
+            <div class="sidebar-brand-copy">
+                <strong>Smarter Energy.</strong>
+                <span>Greener Properties. Tomorrow.</span>
+                <span class="sidebar-brand-mark" aria-hidden="true">✦</span>
+            </div>
+            <img class="sidebar-skyline" src="data:image/svg+xml;base64,{skyline_data}" alt="" />
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 pages.run()

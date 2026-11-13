@@ -1,14 +1,21 @@
 import math
 from collections.abc import Callable
+from html import escape
 from typing import TypeVar
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 from backend.analysis import api
 from backend import settings
-from ui.dashboard.components import DashboardHeader, MetricCard, TYPE_LABELS
+from ui.dashboard.components import (
+    DashboardHeader,
+    MetricCard,
+)
+from ui.dashboard.attribution import render_attribution_footer
+from ui.dashboard.anomalies import flag_daily_anomalies
 from ui.dashboard.errors import DashboardErrorHandler, DashboardOperationError
 
 Result = TypeVar("Result")
@@ -68,19 +75,6 @@ def _daily_energy_series(frame: object) -> pd.Series | None:
     return energy_series.groupby(level=0).sum(min_count=1)
 
 
-def styled_table(frame):
-    def row_colors(row):
-        background = "#F7F1E8" if row.name % 2 == 0 else "#FFFFFF"
-        return [f"background-color: {background}; color: #1A214F;" for _ in row]
-
-    return frame.style.apply(row_colors, axis=1)
-
-
-DashboardHeader(
-    "Overview",
-    "Real-time insights into your energy portfolio.",
-).initialize()
-
 buildings = _dashboard_call(
     "loading buildings",
     api.list_buildings,
@@ -93,7 +87,12 @@ if not buildings:
     st.info("Your portfolio is empty. Import the OPSD dataset to get started.")
     st.stop()
 
-header_filter, _ = st.columns([1, 3])
+title_col, header_filter = st.columns([3, 1], vertical_alignment="center")
+with title_col:
+    DashboardHeader(
+        "Overview",
+        "Real-time insights into your energy portfolio.",
+    ).initialize()
 with header_filter:
     period_label = st.selectbox("Reporting period", ["Last 30 days", "Last 6 months"])
 period_days = 30 if period_label == "Last 30 days" else 180
@@ -146,7 +145,7 @@ if not readings_with_times:
 period_end = max(readings_with_times) + pd.Timedelta(minutes=15)
 period_start = period_end - pd.Timedelta(days=period_days)
 
-energy_by_building = {}
+energy_by_building = []
 timeseries_by_building = {}
 saved_co2_kg = 0.0
 previous_energy_kwh = 0.0
@@ -176,7 +175,7 @@ for building in buildings:
             "co2_kg",
         )
         if energy is not None:
-            energy_by_building[building["name"]] = energy
+            energy_by_building.append((building["name"], energy))
 
     series = _dashboard_call(
         f"loading the consumption trend for {building['name']}",
@@ -223,7 +222,12 @@ for building in buildings:
         if previous is not None:
             previous_energy_kwh += previous
 
-total_energy_kwh = sum(energy_by_building.values())
+total_energy_kwh = sum(energy for _, energy in energy_by_building)
+consumption_label = "Total consumption"
+if len(energy_by_building) < len(buildings):
+    consumption_label = (
+        f"Consumption ({len(energy_by_building)} of {len(buildings)} buildings)"
+    )
 saved_label = "CO₂ saved vs previous period"
 saved_value = f"{saved_co2_kg / 1000:,.2f} t" if savings_reading_count else "Unavailable"
 saved_delta = None
@@ -247,7 +251,7 @@ with metric_cols[0]:
     ).initialize()
 with metric_cols[1]:
     MetricCard(
-        "Total consumption",
+        consumption_label,
         f"{total_energy_kwh:,.0f} kWh" if energy_by_building else "Unavailable",
         key="overview_consumption",
         icon=":material/bolt:",
@@ -261,67 +265,122 @@ with metric_cols[2]:
     ).initialize()
 
 st.divider()
-chart_col, insights_col = st.columns([2.2, 1], gap="large")
-with chart_col:
-    with st.container(border=True, key="overview_trend"):
-        st.subheader("Energy consumption trend")
-        if timeseries_by_building:
-            trend = pd.concat(timeseries_by_building, axis=1).sum(axis=1, min_count=1)
-            chart_data = trend.rename("Consumption (kWh)").rename_axis("Date").reset_index()
-            chart = px.line(
-                chart_data,
-                x="Date",
-                y="Consumption (kWh)",
-                markers=True,
-                color_discrete_sequence=["#173B63"],
-            )
-            chart.update_traces(line={"width": 3}, marker={"size": 6})
-            chart.update_layout(
-                margin=dict(l=12, r=12, t=16, b=12),
-                xaxis_title=None,
-                yaxis_title="Consumption (kWh)",
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)",
-                hovermode="x unified",
-            )
-            st.plotly_chart(chart, width="stretch")
-        else:
-            st.info("There are no readings in this reporting period.")
+with st.container(key="overview_analysis_row"):
+    chart_col, insights_col = st.columns([2.2, 1], gap="large")
+    with chart_col:
+        with st.container(border=True, key="overview_trend"):
+            st.subheader("Energy consumption trend")
+            if timeseries_by_building:
+                trend = pd.concat(timeseries_by_building, axis=1).sum(axis=1, min_count=1)
+                anomaly_data = flag_daily_anomalies(trend)
+                chart_data = trend.rename("Consumption (kWh)").rename_axis("Date").reset_index()
+                chart = px.line(
+                    chart_data,
+                    x="Date",
+                    y="Consumption (kWh)",
+                    markers=True,
+                    color_discrete_sequence=["#173B63"],
+                )
+                chart.update_traces(line={"width": 3}, marker={"size": 6})
+                chart.update_layout(
+                    margin=dict(l=12, r=12, t=16, b=12),
+                    xaxis_title=None,
+                    yaxis_title="Consumption (kWh)",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    hovermode="x unified",
+                )
+                flagged = anomaly_data[anomaly_data["is_anomaly"]]
+                if not flagged.empty:
+                    chart.add_trace(
+                        go.Scatter(
+                            x=flagged.index,
+                            y=flagged["consumption_kwh"],
+                            mode="markers",
+                            name="Unusual-use indicator",
+                            marker={
+                                "color": "#C45B38",
+                                "size": 11,
+                                "line": {"color": "#FFFCF7", "width": 2},
+                            },
+                            hovertemplate=(
+                                "%{x|%b %d, %Y}<br>"
+                                "Consumption: %{y:,.1f} kWh"
+                                "<extra>Unusual-use indicator</extra>"
+                            ),
+                        )
+                    )
+                st.plotly_chart(chart, width="stretch", height=350)
+                if flagged.empty:
+                    st.caption(
+                        "No unusual daily readings were flagged. Indicator only; "
+                        "not a diagnosis."
+                    )
+                else:
+                    st.caption(
+                        f"{len(flagged)} unusual daily "
+                        f"{'reading was' if len(flagged) == 1 else 'readings were'} "
+                        "flagged (orange markers). Each reading is compared with "
+                        "the prior 28 days for the same weekday (at least 3 readings), "
+                        "using the median ± 3 × scaled median absolute deviation; "
+                        "indicator only, not a diagnosis."
+                    )
+            else:
+                st.info("There are no readings in this reporting period.")
 
-with insights_col:
-    with st.container(border=True, key="overview_insights"):
-        st.subheader("Key insights")
-        if energy_by_building:
-            top_building = max(energy_by_building, key=lambda name: energy_by_building[name])
-            st.markdown(
-                f"**Highest consumption**  \n{top_building} used "
-                f"{energy_by_building[top_building]:,.1f} kWh during {period_label.lower()}."
-            )
-        if previous_energy_kwh > 0:
-            change_pct = (total_energy_kwh - previous_energy_kwh) / previous_energy_kwh * 100
-            direction = "higher" if change_pct > 0 else "lower"
-            st.markdown(
-                f"**Compared with the previous period**  \nConsumption was "
-                f"{abs(change_pct):.1f}% {direction}."
-            )
-        else:
-            st.markdown("**Comparison**  \nNo previous-period readings are available.")
+    with insights_col:
+        with st.container(border=True, key="overview_insights"):
+            st.subheader("Key insights")
+            insight_items = []
+            if energy_by_building:
+                top_building, top_energy = max(
+                    energy_by_building, key=lambda item: item[1]
+                )
+                insight_items.append(
+                    (
+                        "Highest consumption",
+                        f"{escape(top_building)}",
+                        f"{top_energy:,.1f} kWh",
+                    )
+                )
+            else:
+                insight_items.append(
+                    (
+                        "Highest consumption",
+                        "Unavailable",
+                        "Building consumption data is unavailable",
+                    )
+                )
+            if previous_energy_kwh > 0:
+                change_pct = (total_energy_kwh - previous_energy_kwh) / previous_energy_kwh * 100
+                direction = "higher" if change_pct > 0 else "lower"
+                insight_items.append(
+                    (
+                        "Change vs previous period",
+                        f"{abs(change_pct):.1f}% {direction}",
+                        "Compared with the previous period",
+                    )
+                )
+            else:
+                insight_items.append(
+                    (
+                        "Comparison",
+                        "Unavailable",
+                        "No previous-period readings",
+                    )
+                )
 
-st.subheader("Your properties")
-property_data = pd.DataFrame(buildings)
-property_data["Category"] = property_data["type"].map(TYPE_LABELS).fillna(
-    property_data["type"].str.title()
-)
-directory = property_data[["name", "Category", "floor_area_m2"]].rename(
-    columns={"name": "Building", "floor_area_m2": "Floor area (m²)"}
-)
-st.dataframe(
-    styled_table(directory),
-    hide_index=True,
-    width="stretch",
-    column_config={
-        "Building": st.column_config.TextColumn("Building"),
-        "Category": st.column_config.TextColumn("Category"),
-        "Floor area (m²)": st.column_config.NumberColumn("Floor area (m²)", format="%.0f"),
-    },
-)
+            insight_cards = "".join(
+                f'<div class="overview-insight-card">'
+                f'<span class="overview-insight-label">{heading}</span>'
+                f'<strong>{value}</strong>'
+                f'<span class="overview-insight-detail">{detail}</span>'
+                f"</div>"
+                for heading, value, detail in insight_items
+            )
+            st.markdown(
+                f'<div class="overview-insight-list">{insight_cards}</div>',
+                unsafe_allow_html=True,
+            )
+
+render_attribution_footer()

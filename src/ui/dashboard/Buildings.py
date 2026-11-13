@@ -1,8 +1,16 @@
+import math
+
 import pandas as pd
 import streamlit as st
 
 from backend.analysis import api
-from ui.dashboard.components import DashboardHeader, MetricCard, PropertyCard, TYPE_LABELS
+from ui.dashboard.components import (
+    DashboardHeader,
+    MetricCard,
+    PropertyCard,
+    TYPE_LABELS,
+)
+from ui.dashboard.attribution import render_attribution_footer
 
 
 def styled_table(rows):
@@ -49,25 +57,43 @@ with metric_cols[2]:
     ).initialize()
 
 st.subheader("Your properties")
-filter_col, search_col = st.columns([1, 2], gap="medium")
 building_types = sorted({building["type"] for building in buildings})
-with filter_col:
-    selected_type = st.selectbox(
-        "Building type",
-        ["All types", *[TYPE_LABELS.get(kind, kind.title()) for kind in building_types]],
-    )
-with search_col:
-    search_text = st.text_input("Search buildings", placeholder="Search by building name") or ""
+with st.container(border=True, key="buildings_filter_panel"):
+    st.markdown("#### Find a property")
+    st.caption("Filter by building type or search by name.")
+    filter_col, search_col = st.columns([1, 2], gap="medium")
+    with filter_col:
+        selected_type = st.selectbox(
+            "Building type",
+            ["all", *building_types],
+            format_func=lambda kind: (
+                "All types" if kind == "all"
+                else TYPE_LABELS.get(kind, kind.title())
+            ),
+            key="buildings_type_filter",
+        )
+    with search_col:
+        search_text = st.text_input(
+            "Search buildings",
+            placeholder="Search by building name",
+            key="buildings_search",
+        ) or ""
+        search_text = search_text.strip()
 
 filtered_buildings = [
     building
     for building in buildings
     if (
-        selected_type == "All types"
-        or TYPE_LABELS.get(building["type"], building["type"].title()) == selected_type
+        selected_type == "all"
+        or building["type"] == selected_type
     )
     and search_text.strip().casefold() in building["name"].casefold()
 ]
+
+st.caption(
+    f"Showing {len(filtered_buildings)} of {len(buildings)} "
+    f"{'building' if len(buildings) == 1 else 'buildings'}."
+)
 
 if not filtered_buildings:
     st.info("No buildings match those filters.")
@@ -79,12 +105,16 @@ if selected_id not in visible_ids:
     selected_id = filtered_buildings[0]["id"]
     st.session_state["selected_building_id"] = selected_id
 
-card_cols = st.columns(3, gap="medium")
-for index, building in enumerate(filtered_buildings):
-    with card_cols[index % len(card_cols)]:
-        if PropertyCard(building).initialize():
-            selected_id = building["id"]
-            st.session_state["selected_building_id"] = selected_id
+cards_per_row = 3
+for row_start in range(0, len(filtered_buildings), cards_per_row):
+    row_buildings = filtered_buildings[row_start:row_start + cards_per_row]
+    card_cols = st.columns(cards_per_row, gap="medium")
+    for column, building in zip(card_cols, row_buildings):
+        is_selected = building["id"] == selected_id
+        with column:
+            if PropertyCard(building, selected=is_selected).initialize():
+                selected_id = building["id"]
+                st.session_state["selected_building_id"] = selected_id
 
 selected_building = next(
     building for building in filtered_buildings if building["id"] == selected_id
@@ -92,6 +122,7 @@ selected_building = next(
 st.subheader("Property details")
 with st.container(border=True, key="building_detail"):
     st.markdown(f"### {selected_building['name']}")
+    st.caption("Building information and the latest available meter data.")
     detail_cols = st.columns(3, gap="medium")
     detail_cols[0].metric(
         "Category",
@@ -102,15 +133,39 @@ with st.container(border=True, key="building_detail"):
 
     latest = api.get_latest(selected_building["id"])
     st.markdown("#### Latest electricity reading")
-    latest_cols = st.columns([1, 2], gap="medium")
-    latest_cols[0].metric("Estimated power", f"{latest['power_kw']:,.2f} kW")
-    if latest["last_reading"] is None:
-        latest_cols[1].info("No meter readings have been recorded for this property yet.")
+    if not isinstance(latest, dict):
+        st.warning("Latest meter data is unavailable for this building.")
     else:
-        latest_cols[1].write(f"**Last updated:** {latest['last_reading']}")
-        if latest["zones"]:
+        latest_cols = st.columns(3, gap="medium")
+        power_kw = latest.get("power_kw")
+        power_display = "Unavailable"
+        if power_kw is not None:
+            try:
+                power_value = float(str(power_kw))
+            except (TypeError, ValueError):
+                pass
+            else:
+                if math.isfinite(power_value):
+                    power_display = f"{power_value:,.2f} kW"
+        latest_cols[0].metric(
+            "Estimated power",
+            power_display,
+        )
+        last_reading = latest.get("last_reading")
+        with latest_cols[1]:
+            st.caption("Last reading")
+            st.write(
+                str(last_reading) if last_reading is not None else "No readings"
+            )
+
+        zones = latest.get("zones") or []
+        latest_cols[2].metric("Meter zones", len(zones))
+        if last_reading is None:
+            st.info("No meter readings have been recorded for this property yet.")
+        elif zones:
+            st.markdown("#### Power by meter zone")
             st.dataframe(
-                styled_table(latest["zones"]),
+                styled_table(zones),
                 hide_index=True,
                 width="stretch",
                 column_config={
@@ -118,3 +173,7 @@ with st.container(border=True, key="building_detail"):
                     "power_kw": st.column_config.NumberColumn("Power (kW)", format="%.2f"),
                 },
             )
+        else:
+            st.caption("No meter-zone breakdown is available for this reading.")
+
+render_attribution_footer()

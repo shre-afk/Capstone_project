@@ -14,6 +14,7 @@ dependencies = [
     "numpy",
     "plotly",
     "streamlit",
+    "reportlab",
     "scikit-learn",
     "statsmodels",
     "python-dotenv",
