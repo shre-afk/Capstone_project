@@ -999,10 +999,17 @@
 }
 
 .st-key-advisor_chat [data-testid="stForm"] {
+    width: 100%;
+    box-sizing: border-box;
     border: 1px solid #D7CBB9;
     border-radius: 14px;
     padding: 0.65rem;
     background: #FFFCF7;
+}
+
+.st-key-advisor_composer {
+    width: 100%;
+    min-width: 0;
 }
 
 .st-key-advisor_chat [data-testid="stTextInput"] input {
@@ -1039,6 +1046,7 @@
 
 .st-key-advisor_chat [data-testid="stFormSubmitButton"] button {
     min-height: 2.8rem;
+    min-width: 7rem;
 }
 
 @media (max-width: 768px) {

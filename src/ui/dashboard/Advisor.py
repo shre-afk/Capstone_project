@@ -12,25 +12,35 @@ from ui.dashboard.components import DashboardHeader
 def new_conversation():
     for key in (
         "advisor_agent", "advisor_thread_id", "advisor_messages",
-        "advisor_failed", "advisor_question",
+        "advisor_failed", "advisor_question", "advisor_pending_question",
     ):
         st.session_state.pop(key, None)
 
 
 def use_suggested_prompt(prompt):
-    st.session_state["advisor_question"] = prompt
+    st.session_state["advisor_pending_question"] = prompt
+    st.session_state["advisor_question"] = ""
+
+
+def submit_question():
+    question = st.session_state.get("advisor_question", "").strip()
+    if question:
+        st.session_state["advisor_pending_question"] = question
+    st.session_state["advisor_question"] = ""
 
 
 st.session_state.setdefault("advisor_messages", [])
 st.session_state.setdefault("advisor_thread_id", uuid4().hex)
 st.session_state.setdefault("advisor_failed", False)
+question = st.session_state.pop("advisor_pending_question", None)
+busy = question is not None
 
 DashboardHeader(
     "AI Advisor",
     "Your smart assistant for energy insights",
 ).initialize()
 
-with st.container(border=True, key="advisor_chat"):
+with st.container(border=True, key="advisor_chat", width="stretch"):
     with st.container(
         horizontal=True,
         horizontal_alignment="distribute",
@@ -46,16 +56,33 @@ with st.container(border=True, key="advisor_chat"):
         )
 
     conversation = st.container(
-        key="advisor_conversation", height=280, border=False, autoscroll=True,
+        key="advisor_conversation", height=520, width="stretch", border=False, autoscroll=True,
     )
     with conversation:
-        if not st.session_state.advisor_messages:
-            with st.chat_message("assistant", avatar=":material/robot:"):
-                st.markdown(
-                    "Hello! I can help you explore your buildings, electricity "
-                    "usage, estimated costs and peak periods. Choose a suggestion "
-                    "below or ask a question about a building and date range."
-                )
+        welcome = st.empty()
+        if not st.session_state.advisor_messages and not busy:
+            with welcome.container():
+                with st.chat_message("assistant", avatar=":material/robot:"):
+                    st.markdown(
+                        "Hello! I can help you explore your buildings, electricity "
+                        "usage, estimated costs and peak periods. Choose a suggestion "
+                        "below or ask a question about a building and date range."
+                    )
+                st.caption("Try asking:")
+                prompts = [
+                    ("Buildings", "Which buildings are available? List their IDs and names."),
+                    ("Consumption", "How much electricity did Business 1 import in November 2016? Include estimated cost and data completeness."),
+                    ("Peak usage", "Show Business 1's top 3 electricity-import hours and days in November 2016. Include data coverage."),
+                ]
+                for index, (column, (label, prompt)) in enumerate(zip(st.columns(3, gap="small"), prompts)):
+                    with column:
+                        st.button(
+                            label,
+                            key=f"advisor_prompt_{index}",
+                            on_click=use_suggested_prompt,
+                            args=(prompt,),
+                            width="stretch",
+                        )
 
         for message in st.session_state.advisor_messages:
             avatar = ":material/robot:" if message["role"] == "assistant" else None
@@ -65,43 +92,26 @@ with st.container(border=True, key="advisor_chat"):
                 else:
                     st.markdown(message["content"])
 
-    st.caption("Try asking:")
-    prompts = [
-        ("Buildings", "Which buildings are available? List their IDs and names."),
-        ("Consumption", "How much electricity did Business 1 import in November 2016? Include estimated cost and data completeness."),
-        ("Peak usage", "Show Business 1's top 3 electricity-import hours and days in November 2016. Include data coverage."),
-    ]
-    for index, (column, (label, prompt)) in enumerate(zip(st.columns(3, gap="small"), prompts)):
-        with column:
-            st.button(
-                label,
-                key=f"advisor_prompt_{index}",
-                on_click=use_suggested_prompt,
-                args=(prompt,),
-                help=prompt,
-                width="stretch",
-                disabled=st.session_state.advisor_failed,
-            )
-
-    with st.form("advisor_question_form", clear_on_submit=True):
-        input_col, send_col = st.columns(
-            [1, 0.22], gap="small", vertical_alignment="bottom",
-        )
-        with input_col:
-            question = st.text_input(
+    with st.form("advisor_question_form", width="stretch"):
+        with st.container(
+            horizontal=True, gap="small", vertical_alignment="bottom",
+            key="advisor_composer", width="stretch",
+        ):
+            st.text_input(
                 "Your question",
                 key="advisor_question",
                 label_visibility="collapsed",
                 placeholder="Ask about a building or historical period…",
                 max_chars=4000,
-                disabled=st.session_state.advisor_failed,
+                width="stretch",
+                disabled=busy or st.session_state.advisor_failed,
             )
-        with send_col:
-            submitted = st.form_submit_button(
+            st.form_submit_button(
                 "Send",
                 type="primary",
-                width="stretch",
-                disabled=st.session_state.advisor_failed,
+                width="content",
+                on_click=submit_question,
+                disabled=busy or st.session_state.advisor_failed,
             )
 
     st.caption(
@@ -111,8 +121,7 @@ with st.container(border=True, key="advisor_chat"):
     if st.session_state.advisor_failed:
         st.info("Select New conversation to start again.")
 
-if submitted and question and question.strip() and not st.session_state.advisor_failed:
-    question = question.strip()
+if question and not st.session_state.advisor_failed:
     st.session_state.advisor_messages.append({"role": "user", "content": question})
     with conversation:
         with st.chat_message("user"):
