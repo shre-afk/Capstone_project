@@ -25,7 +25,7 @@ A walkthrough covering the problem, the product, how it works, and the roadmap.
 - [Data](#data)
 
 
-- [How to run the program](#How-to-run-the-program)
+- [How to run the program](#how-to-run-the-program)
 - [Configuration](#configuration)
 - [Project structure](#project-structure)
 - [Design](#design)
@@ -58,13 +58,14 @@ A walkthrough covering the problem, the product, how it works, and the roadmap.
 | Dashboard page | What you get |
 |---|---|
 | **Overview** | Portfolio totals for the last 30 days or 6 months, CO₂ change, a daily consumption trend with an **unusual-use indicator**, and key insights |
-| **Buildings** | All properties with type and floor area, filterable by type or name; per-building details with the latest estimated power and power per meter zone |
+| **Buildings** | All properties with type and floor area, filterable by type or name; per-building details with a 30-day sustainability score, the latest estimated power and power per meter zone |
 | **Energy Analytics** | Consumption by building and by building type, top consumers, and a comparison with the previous period of the same length |
 | **Forecasting** | An hourly demand forecast per building for the next 7, 14 or 30 days, with the forecast total, peak day, daily average and a recommended action |
 | **AI Advisor** | Ask questions in plain language ("Compare Home 1 and Home 3 for November 2016"). The advisor looks up real figures with tools and answers with assumptions and suggested actions |
 | **Reports** | Consumption, cost and CO₂ for 30 days, 6 months, 12 months or a custom range, downloadable as **PDF** or **CSV** |
 
 Behind the dashboard, the analytics layer also provides:
+
 - energy, cost, CO₂ and energy-use intensity (kWh/m²/year) for any period;
 - savings against the previous period;
 - a 0–100 sustainability score with grades A–E;
@@ -88,7 +89,7 @@ flowchart LR
     AGENT --> DASH
 ```
 
-1. **Ingest.** The OPSD file stores running meter totals. `backend.ingestion.opsd` turns them into energy per 15-minute interval and drops intervals across data gaps. It rejects physically impossible values (negative, or above a per-building-type limit) and stores readings once only (`INSERT OR IGNORE`, so re-running is safe).
+1. **Ingest.** The OPSD file stores running meter totals. `backend.ingestion.opsd` turns them into energy per 15-minute interval and drops differences across nonconsecutive timestamps. It rejects negative values and values above configured per-building-type limits, then ignores duplicate meter/timestamp records (`INSERT OR IGNORE`). The source dataset may already contain interpolated values.
 2. **Store.** One SQLite database (`energy.db`) holds buildings, zones, meters and readings, with foreign keys and checks. All times are stored as UTC.
 3. **Analyse.** `backend.analysis.api` is the single entry point for the team. Pure formulas live in `backend.analysis.calc`. Periods use Berlin time, with the start included and the end excluded.
 4. **Show.** The Streamlit app (`src/app.py`) calls the API for every page.
@@ -116,7 +117,7 @@ The database covers 2016: about 170,000 validated 15-minute readings. January to
 
 **Assumptions, all editable in `config.toml`:**
 - an electricity price of €0.30/kWh (placeholder);
-- a CO₂ factor of 0.38 kg/kWh (German grid mix);
+- an assumed electricity CO₂ factor of 0.38 kg/kWh;
 - energy-intensity benchmarks per building type;
 - score weights.
 
@@ -244,7 +245,7 @@ Capstone_project/
 ├── data/energy.db                # seeded SQLite database (Docker volume)
 ├── data/raw/                     # OPSD CSV (downloaded, not in Git)
 ├── UML_diagrams/Backend/         # backend UML and design diagrams
-├── docs/diagrams/                # system architecture diagram
+├── UML_diagrams/Whole-system Architecture.png    # system architecture diagram
 ├── src/
 │   ├── app.py                    # Streamlit entry point and page navigation
 │   ├── styles/style.css
@@ -257,8 +258,7 @@ Capstone_project/
 │   │   ├── ingestion/opsd.py     # import and validation
 │   │   ├── ingestion/replay.py   # live replay
 │   │   └── analysis/             # api.py (service layer), calc.py (formulas)
-│   ├── advisor/                  # AI Energy Advisor: agent, model, prompts, tools, settings
-│   └── data/loader.py            # OPSD loading helpers
+│   └── advisor/                  # AI Energy Advisor: agent, model, prompts, tools, settings
 ├── tests/                        # pytest suite (backend + dashboard)
 ├── pyproject.toml
 └── requirements.txt
@@ -316,7 +316,7 @@ Dates without a time zone are Berlin time; `end` is excluded; invalid input rais
 
 ## AI Advisor
 
-- **Model:** any tool-calling model on KI Connect, the NRW universities' OpenAI-compatible AI gateway, via `langchain-openai`.
+- **Model:** a compatible tool-calling model available to your KI Connect account, accessed through `langchain-openai`.
 - **Tools:**
   - `list_buildings`
   - `get_data_availability`
@@ -366,11 +366,11 @@ python -m pytest --cov=backend --cov-report=term-missing
 
 ## Roadmap
 
-1. **Now:** the complete platform: dashboard, analytics, forecast, AI advisor and Docker deployment.
+1. **Now:** a working prototype with dashboard, analytics, forecast, AI advisor and Docker configuration.
 2. **Stage 2:**
    - seasonal anomaly alerts (unusual use for the season, day type and hour);
    - weather-corrected savings;
-   - the sustainability score shown in the dashboard.
+   - refinements to the sustainability score already shown on Buildings.
 3. **Stage 3:** live smart-meter connections, heat and gas meters, and several zones per building.
 4. **Stage 4:** pilots with property managers, whole-portfolio views and CO₂/ESG reporting.
 
