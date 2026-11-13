@@ -1,6 +1,7 @@
-# Database & Analysis (src/backend)
- 
-Owner: Ourvish Lofur. @team uses this section ONLY through `backend.analysis.api`.
+# Database & Analysis 
+Owner: Ourvish Lofur (7226994)
+
+@team uses this section ONLY through `backend.analysis.api`
  
 ## Quick start
  
@@ -41,19 +42,23 @@ The container needs `config.toml`, the CSV in `data/raw/` (or a ready `energy.db
 and `python -m backend.ingestion.opsd` once before the dashboard starts.
 `DB_PATH` (environment variable) moves the database file, e.g. into a volume.
  
-## Known limits (v1)
+## Known limits
  
 Floor areas, benchmarks and the electricity price are placeholders (see `config.toml`).
-One zone and one electricity meter per building; the classes and tables already support more.
+
+One zone and one electricity meter per building; the classes and tables already support more but OPSD data doesn't.
+
 Savings compare with the previous period of the same length, not weather-corrected.
 
 
-## Verification (manual, v1)
+## Verification
 
 - Import run twice: 169,378 readings, 0 rejected; second run adds 0 (idempotent).
 - Time zones: October 2016 = 31.04 days (clock change handled).
 - Business 1, November 2016: 20,799.62 kWh, 6,239.89 EUR, 7,903.9 kg CO2;
   -7.0 % vs October; score 35.8 (E) = 0.6 x 48.8 + 0.4 x 16.2.
+
 - Live replay: `get_latest` moves into December; Ctrl+C stops cleanly.
 - Bad input (unknown building id, start after end) raises `ValueError`.
-- No automated tests yet (planned: pytest suite for models, database, calc, api).
+- Unit Tests: pytest tests in `tests/backend/` (models, database, ingestion, calc, api) - run `python -m pytest -v` from the project root
+- Unit Test Result: All 26 tests passed

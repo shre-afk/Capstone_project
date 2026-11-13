@@ -151,7 +151,7 @@ def change_pct(now, before):
     return round((now - before) / before * 100, 1)
 
 
-# Seasonal Native Forecast
+# Seasonal Naive Forecast
 # Average of same X weekday from last 4 weeks = Next X weekday
 def forecast_same_hour(hourly, days=7, weeks=4):
     """Next reading at time, t = Average of last four weeks of reading at exact time, t"""

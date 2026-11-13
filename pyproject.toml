@@ -24,3 +24,10 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+
+[tool.pytest.ini_options]
+# Only the main Capstone project tests no Hometask files
+testpaths = ["tests"]
+# allows "import backend" to work without pip install -e .
+pythonpath = ["src"]
