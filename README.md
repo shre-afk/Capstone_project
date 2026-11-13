@@ -23,7 +23,7 @@ A walkthrough covering the problem, the product, how it works, and the roadmap.
 - [What it does](#what-it-does)
 - [How it works](#how-it-works)
 - [Data](#data)
-- [Getting started - Running the program](#getting-started)
+- [Getting started - How to run the program](#getting-started)
 - [Configuration](#configuration)
 - [Project structure](#project-structure)
 - [Backend API](#backend-api)
@@ -311,84 +311,31 @@ python -m pytest --cov=backend --cov-report=term-missing
 ---
 
 ## Design
+All design diagrams are in the repository:
 
-### Energy domain model
+- [`UML_diagrams`](UML_diagrams/): the whole-system architecture
+- [`UML_diagrams/Backend/`](UML_diagrams/Backend/): the Data Management & Energy Analytics subsystem (12 diagrams)
 
-```mermaid
-classDiagram
-    direction TB
-    class Building {
-        <<abstract>>
-        +id: int
-        +name: string
-        +floor_area_m2: float
-        +is_open(ts) bool*
-    }
-    class Home
-    class Business
-    class PublicBuilding
-    class Zone {
-        +id: int
-        +name: string
-    }
-    class Meter {
-        +id: int
-        +kind: string
-        +unit: string
-        +source: string
-    }
-    class EnergyMeter
-    class Reading {
-        +meter_id: int
-        +ts_utc: datetime
-        +value: float
-    }
-    Building <|-- Home
-    Building <|-- Business
-    Building <|-- PublicBuilding
-    Building "1" *-- "1..*" Zone
-    Zone "1" *-- "1..*" Meter
-    Meter <|-- EnergyMeter
-    Meter "1" *-- "0..*" Reading
-```
+### System architecture
 
-Each building type defines its own opening hours (`is_open`): homes 06:00–23:00 every day, businesses Monday–Friday 07:00–19:00, public buildings Monday–Friday 07:00–17:00. The analytics use these hours to separate energy used while the building was open from energy used while it was closed.
+![System architecture](UML_diagrams/Whole-system Architecture.png)
 
-### Dashboard components
+### Backend diagrams
 
-```mermaid
-classDiagram
-    class DashboardHeader {
-        -title: str
-        -subtitle: str
-        +initialize()
-    }
-    class MetricCard {
-        -label: str
-        -value: object
-        -key: str
-        -icon: str
-        -delta: str
-        +initialize()
-    }
-    class PropertyCard {
-        -building: dict
-        +initialize() bool
-    }
-```
-
-These classes in `src/ui/dashboard/components.py` validate their inputs through properties and render consistent cards across the pages.
-
-### Visual theme
-
-| Colour | Hex |
+| # | Diagram |
 |---|---|
-| Midnight Blue | `#1E3045` |
-| Slate Blue | `#344B63` |
-| Warm Sand | `#F3EADF` |
-| Bronze | `#C09262` |
-| Espresso Brown | `#49372B` |
-
+| 1 | [Backend System Design](UML_diagrams/Backend/1_Backend%20System%20Design.jpeg) |
+| 2 | [OPSD Data](UML_diagrams/Backend/2_OPSD%20Data.jpeg) |
+| 3 | [High-Level Architecture](UML_diagrams/Backend/3_High-Level%20Architecture.jpeg) |
+| 4 | [Class Diagram](UML_diagrams/Backend/4_Class%20Diagram.jpeg) |
+| 5 | [Object Diagram](UML_diagrams/Backend/5_Object%20Diagram.jpeg) |
+| 6 | [Database Design](UML_diagrams/Backend/6_Database%20Design.jpeg) |
+| 7 | [Flowchart - opsd.run()](UML_diagrams/Backend/7_Flowchart%20-%20opsd.run%28%29.jpeg) |
+| 8 | [Flowchart - replay.run()](UML_diagrams/Backend/8_Flowchart%20-%20replay.run%28%29.jpeg) |
+| 9 | [Sequence Diagram - Live data flow](UML_diagrams/Backend/9_Sequence%20Diagram%20-%20Live%20data%20flow.jpeg) |
+| 10 | [Sequence Diagram - get_kpis()](UML_diagrams/Backend/10_Sequence%20Diagram%20-%20get_kpis%28%29.jpeg) |
+| 11 | [Sequence Diagram - get_score](UML_diagrams/Backend/11_Sequence%20Diagram%20-%20get_score.jpeg) |
+| 12 | [Connection to other team system](UML_diagrams/Backend/12_Connection%20to%20other%20team%20system.jpeg) |
 
 
 ---
