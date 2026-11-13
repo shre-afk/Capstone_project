@@ -24,14 +24,17 @@ A walkthrough covering the problem, the product, how it works, and the roadmap.
 - [How it works](#how-it-works)
 - [Data](#data)
 
+
 - [How to run the program](#How-to-run-the-program)
 - [Configuration](#configuration)
 - [Project structure](#project-structure)
 - [Design](#design)
 
+
 - [Backend API](#backend-api)
 - [AI Advisor](#ai-advisor)
 - [Testing](#testing)
+
 
 - [Roadmap - Future development](#roadmap)
 - [Data licence and academic use](#data-licence-and-academic-use)
