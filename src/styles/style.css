@@ -34,10 +34,10 @@
 }
 
 [data-testid="stSidebar"] {
-    width: 18rem !important;
-    min-width: 18rem !important;
-    max-width: 18rem !important;
-    flex: 0 0 18rem !important;
+    width: 16rem !important;
+    min-width: 16rem !important;
+    max-width: 16rem !important;
+    flex: 0 0 16rem !important;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -45,7 +45,7 @@
     display: flex;
     min-height: 100vh;
     flex-direction: column;
-    padding: 1.1rem 0.85rem 1rem;
+    padding: 1.1rem 0.7rem 1rem;
 }
 
 [data-testid="stSidebar"] img[alt="Logo"] {
@@ -113,7 +113,7 @@
     bottom: 0;
     left: 0;
     display: flex;
-    width: 18rem;
+    width: 16rem;
     min-height: 9.5rem;
     flex-direction: column;
     justify-content: flex-end;
@@ -168,10 +168,10 @@
 
 @media (max-width: 768px) {
     [data-testid="stSidebar"] {
-        width: min(18rem, 78vw) !important;
-        min-width: min(18rem, 78vw) !important;
-        max-width: min(18rem, 78vw) !important;
-        flex-basis: min(18rem, 78vw) !important;
+        width: min(16rem, 78vw) !important;
+        min-width: min(16rem, 78vw) !important;
+        max-width: min(16rem, 78vw) !important;
+        flex-basis: min(16rem, 78vw) !important;
     }
 
     [data-testid="stSidebarNav"] {
@@ -289,6 +289,48 @@
     border-color: #E3D1B4;
 }
 
+@media (min-width: 769px) and (max-height: 850px) {
+    .st-key-total_buildings,
+    .st-key-total_area,
+    .st-key-number_of_types {
+        min-height: 105px;
+        padding: 0.65rem 0.8rem;
+    }
+
+    .st-key-buildings_filter_panel {
+        margin: 0.25rem 0 0.5rem;
+        padding: 0.35rem 0.75rem 0.55rem;
+    }
+
+    .st-key-buildings_filter_panel [data-testid="stTextInput"] input,
+    .st-key-buildings_filter_panel [data-testid="stSelectbox"] [role="combobox"] {
+        min-height: 2.4rem;
+    }
+
+    [class*="st-key-property_card_"] {
+        min-height: 270px;
+        padding: 0.6rem;
+    }
+
+    .property-visual {
+        height: 90px;
+        min-height: 90px;
+    }
+
+    [class*="st-key-property_card_"] h4 {
+        min-height: 2em;
+        margin: 0.1rem 0;
+    }
+
+    [class*="st-key-property_card_"] [data-testid="stButton"] {
+        margin-top: 0.25rem;
+    }
+
+    .st-key-building_detail {
+        padding: 0.75rem 1rem;
+    }
+}
+
 .st-key-total_buildings [data-testid="stMetric"],
 .st-key-total_area [data-testid="stMetric"],
 .st-key-number_of_types [data-testid="stMetric"],
@@ -404,7 +446,7 @@
 .st-key-overview_consumption,
 .st-key-overview_emissions {
     box-sizing: border-box;
-    min-height: 180px;
+    min-height: 145px;
     border-radius: 16px;
     padding: 0.8rem;
 }
@@ -459,8 +501,8 @@
 .st-key-overview_insights {
     box-sizing: border-box;
     width: 100%;
-    height: 470px;
-    min-height: 470px;
+    height: 420px;
+    min-height: 420px;
     background: #FFFCF7;
     border: 1px solid #E5D9C8;
     border-radius: 16px;
@@ -510,6 +552,46 @@
     border: 0;
     border-radius: 0;
     padding: 0;
+}
+
+@media (min-width: 769px) and (max-height: 850px) {
+    [data-testid="stMainBlockContainer"] {
+        padding-top: 1rem !important;
+    }
+
+    .st-key-overview_buildings,
+    .st-key-overview_consumption,
+    .st-key-overview_emissions {
+        min-height: 115px;
+        padding: 0.45rem 0.7rem;
+    }
+
+    .st-key-overview_buildings [data-testid="stMetricLabel"],
+    .st-key-overview_consumption [data-testid="stMetricLabel"],
+    .st-key-overview_emissions [data-testid="stMetricLabel"] {
+        min-height: 2em;
+    }
+
+    .st-key-overview_trend,
+    .st-key-overview_insights {
+        height: 360px;
+        min-height: 360px;
+        padding: 0.45rem 0.75rem;
+    }
+
+    .st-key-overview_insights .overview-insight-list {
+        gap: 0.6rem;
+        margin-top: 0.55rem;
+    }
+
+    .st-key-overview_insights .overview-insight-card {
+        gap: 0.2rem;
+        padding: 0.65rem 0.8rem;
+    }
+
+    .institution-attribution {
+        margin-top: 1rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -586,6 +668,30 @@
 
 .st-key-energy_analytics_consumers [data-testid="stProgress"] {
     padding-top: 0.3rem;
+}
+
+@media (min-width: 769px) and (max-height: 850px) {
+    .st-key-energy_analytics_filters {
+        margin: 0.35rem 0 0.6rem;
+        padding: 0.45rem 0.75rem 0;
+    }
+
+    .st-key-energy_analytics_filters [data-testid="stSelectbox"] [role="combobox"] {
+        min-height: 2.4rem;
+    }
+
+    .st-key-energy_analytics_buildings,
+    .st-key-energy_analytics_types,
+    .st-key-energy_analytics_consumers,
+    .st-key-energy_analytics_comparison {
+        padding: 0.55rem 0.75rem;
+    }
+
+    .st-key-energy_analytics_buildings [data-testid="stCaption"],
+    .st-key-energy_analytics_types [data-testid="stCaption"],
+    .st-key-energy_analytics_consumers [data-testid="stCaption"] {
+        margin-bottom: 0.2rem;
+    }
 }
 
 .st-key-overview_insights h3 {
